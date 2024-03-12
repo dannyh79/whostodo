@@ -1,6 +1,7 @@
 package routes_test
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -81,6 +82,36 @@ func Test_GETTasks(t *testing.T) {
 			if len(tc.data) > 0 {
 				suite.repo.PopulateData(tc.data)
 			}
+			suite.engine.ServeHTTP(rr, req)
+
+			assertHttpStatus(t, rr, tc.statusCode)
+			assertResponseBody(t, rr.Body.String(), tc.expected)
+		})
+	}
+}
+
+func Test_POSTTasks(t *testing.T) {
+	tests := []struct {
+		name       string
+		data       string
+		statusCode int
+		expected   string
+	}{
+		{
+			name:       "returns status code 201 with result",
+			data:       `{"name":"買晚餐"}`,
+			statusCode: http.StatusCreated,
+			// Returning format is slightly different per spec
+			expected: `{"result":{"name":"買晚餐","status":0,"id":1}}`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			rr := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBufferString(tc.data))
+
+			suite := newTestSuite()
 			suite.engine.ServeHTTP(rr, req)
 
 			assertHttpStatus(t, rr, tc.statusCode)
