@@ -6,9 +6,9 @@ import (
 )
 
 type TaskOutput struct {
-	Id int `json:"id"`
-	Name string `json:"name"`
-	Status int `json:"status"`
+	Id     int    `json:"id"`
+	Name   string `json:"name"`
+	Status int    `json:"status"`
 }
 
 type TaskRepository repository.Repository[entity.Task]
@@ -23,8 +23,8 @@ func (u *TasksUsecase) ListTasks() []TaskOutput {
 	tasks := u.repo.ListAll()
 	for _, task := range tasks {
 		output = append(output, TaskOutput{
-			Id: task.Id,
-			Name: task.Name,
+			Id:     task.Id,
+			Name:   task.Name,
 			Status: task.Status,
 		})
 	}

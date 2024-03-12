@@ -22,7 +22,7 @@ func (r *MockTaskRepository) ListAll() []*entity.Task {
 }
 
 func (r *MockTaskRepository) PopulateData(data []repository.TaskSchema) {
-	for _, row := range(data) {
+	for _, row := range data {
 		r.data = append(r.data, row)
 	}
 }
@@ -35,17 +35,17 @@ func initMockTaskRepository() *MockTaskRepository {
 
 func Test_ListTasks(t *testing.T) {
 	tests := []struct {
-		name string
-		data []repository.TaskSchema
+		name     string
+		data     []repository.TaskSchema
 		expected []tasks.TaskOutput
 	}{
 		{
-			name: "returns tasks",
-			data: []repository.TaskSchema{{Id: 1, Name: "name", Status: 0}},
+			name:     "returns tasks",
+			data:     []repository.TaskSchema{{Id: 1, Name: "name", Status: 0}},
 			expected: []tasks.TaskOutput{{Id: 1, Name: "name", Status: 0}},
 		},
 		{
-			name: "returns empty tasks",
+			name:     "returns empty tasks",
 			expected: []tasks.TaskOutput{},
 		},
 	}
@@ -53,7 +53,7 @@ func Test_ListTasks(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			repo := initMockTaskRepository()
-			if (len(tc.data) > 0) {
+			if len(tc.data) > 0 {
 				repo.PopulateData(tc.data)
 			}
 			usecase := tasks.InitTasksUsecase(repo)

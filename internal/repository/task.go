@@ -3,8 +3,8 @@ package repository
 import entity "github.com/dannyh79/whostodo/internal/tasks/entities"
 
 type TaskSchema struct {
-	Id int
-	Name string
+	Id     int
+	Name   string
 	Status int
 }
 

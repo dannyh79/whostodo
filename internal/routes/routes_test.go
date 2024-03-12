@@ -15,7 +15,7 @@ import (
 
 type MockTestSuite struct {
 	engine *gin.Engine
-	repo *MockTaskRepository
+	repo   *MockTaskRepository
 }
 
 type MockTaskRepository struct {
@@ -31,7 +31,7 @@ func (r *MockTaskRepository) ListAll() []*entity.Task {
 }
 
 func (r *MockTaskRepository) PopulateData(data []repository.TaskSchema) {
-	for _, row := range(data) {
+	for _, row := range data {
 		r.data = append(r.data, row)
 	}
 }
@@ -48,27 +48,27 @@ func newTestSuite() *MockTestSuite {
 
 	return &MockTestSuite{
 		engine: engine,
-		repo: repo,
+		repo:   repo,
 	}
 }
 
 func Test_GETTasks(t *testing.T) {
-	tests := []struct{
-		name string
-		data []repository.TaskSchema
+	tests := []struct {
+		name       string
+		data       []repository.TaskSchema
 		statusCode int
-		expected string
+		expected   string
 	}{
 		{
-			name: "returns status code 200 with result",
-			data: []repository.TaskSchema{{Id: 1, Name: "name", Status: 0}},
+			name:       "returns status code 200 with result",
+			data:       []repository.TaskSchema{{Id: 1, Name: "name", Status: 0}},
 			statusCode: http.StatusOK,
-			expected: `{"result":[{"id":1,"name":"name","status":0}]}`,
+			expected:   `{"result":[{"id":1,"name":"name","status":0}]}`,
 		},
 		{
-			name: "returns status code 200 with empty result",
+			name:       "returns status code 200 with empty result",
 			statusCode: http.StatusOK,
-			expected: `{"result":[]}`,
+			expected:   `{"result":[]}`,
 		},
 	}
 
@@ -78,7 +78,7 @@ func Test_GETTasks(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
 
 			suite := newTestSuite()
-			if (len(tc.data) > 0) {
+			if len(tc.data) > 0 {
 				suite.repo.PopulateData(tc.data)
 			}
 			suite.engine.ServeHTTP(rr, req)

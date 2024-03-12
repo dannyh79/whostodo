@@ -8,7 +8,7 @@ import (
 )
 
 func AddRoutes(r *gin.Engine, u *tasks.TasksUsecase) *gin.Engine {
-	r.GET("/tasks", func (c *gin.Context) {
+	r.GET("/tasks", func(c *gin.Context) {
 		tasks := u.ListTasks()
 		c.JSON(http.StatusOK, gin.H{
 			"result": tasks,
