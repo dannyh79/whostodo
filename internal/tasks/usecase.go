@@ -59,6 +59,10 @@ func (u *TasksUsecase) UpdateTask(id int, i *UpdateTaskInput) (*TaskOutput, erro
 	return toTaskOutput(updated), nil
 }
 
+func (u *TasksUsecase) DeleteTask(id int) error {
+	return nil
+}
+
 func InitTasksUsecase(repo TaskRepository) *TasksUsecase {
 	return &TasksUsecase{repo}
 }

@@ -62,8 +62,15 @@ func updateTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	}
 }
 
-func deleteTaskHandler(_ *tasks.TasksUsecase) gin.HandlerFunc {
+func deleteTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		id, _ := strconv.Atoi(c.Param("id"))
+		err := u.DeleteTask(id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, nil)
+			return
+		}
+
 		c.JSON(http.StatusOK, nil)
 	}
 }
