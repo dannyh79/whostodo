@@ -17,6 +17,7 @@ type PostTaskOutput struct {
 func AddRoutes(r *gin.Engine, u *tasks.TasksUsecase) {
 	r.GET("/tasks", listTasksHandler(u))
 	r.POST("/tasks", createTasksHandler(u))
+	r.PUT("/tasks/:id", updateTaskHandler(u))
 }
 
 func listTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
@@ -35,6 +36,15 @@ func createTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 		task := u.CreateTask(&payload)
 		c.JSON(http.StatusCreated, gin.H{
 			"result": toPostTaskOutput(task),
+		})
+	}
+}
+
+func updateTaskHandler(_ *tasks.TasksUsecase) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		stubbed := &tasks.TaskOutput{Id: 1, Name: "買晚餐", Status: 1}
+		c.JSON(http.StatusCreated, gin.H{
+			"result": toPostTaskOutput(stubbed),
 		})
 	}
 }

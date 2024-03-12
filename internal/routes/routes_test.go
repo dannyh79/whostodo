@@ -2,6 +2,7 @@ package routes_test
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -108,8 +109,7 @@ func Test_POSTTasks(t *testing.T) {
 			name:       "returns status code 201 with result",
 			data:       `{"name":"買晚餐"}`,
 			statusCode: http.StatusCreated,
-			// Returning format is slightly different per spec
-			expected: `{"result":{"name":"買晚餐","status":0,"id":1}}`,
+			expected:   `{"result":{"name":"買晚餐","status":0,"id":1}}`,
 		},
 	}
 
@@ -120,6 +120,43 @@ func Test_POSTTasks(t *testing.T) {
 			req.Header.Add("Content-Type", "application/json")
 
 			suite := newTestSuite()
+			suite.engine.ServeHTTP(rr, req)
+
+			assertHttpStatus(t, rr, tc.statusCode)
+			assertResponseBody(t, rr.Body.String(), tc.expected)
+		})
+	}
+}
+
+func Test_PUTTasks(t *testing.T) {
+	tests := []struct {
+		name       string
+		data       []repository.TaskSchema
+		payload    string
+		statusCode int
+		expected   string
+	}{
+		{
+			name:       "returns status code 200 with result",
+			data:       []repository.TaskSchema{{Id: 1, Name: "買早餐", Status: 0}},
+			payload:    `{"name":"買早餐","status":1}`,
+			statusCode: http.StatusCreated,
+			expected:   `{"result":{"name":"買晚餐","status":1,"id":1}}`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			rr := httptest.NewRecorder()
+			req, _ := http.NewRequest(
+				http.MethodPut,
+				fmt.Sprintf("/tasks/%d", tc.data[0].Id),
+				bytes.NewBufferString(tc.payload),
+			)
+			req.Header.Add("Content-Type", "application/json")
+
+			suite := newTestSuite()
+			suite.repo.PopulateData(tc.data)
 			suite.engine.ServeHTTP(rr, req)
 
 			assertHttpStatus(t, rr, tc.statusCode)
