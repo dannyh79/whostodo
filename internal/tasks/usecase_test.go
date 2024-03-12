@@ -126,16 +126,29 @@ func Test_CreateTask(t *testing.T) {
 
 func Test_UpdateTask(t *testing.T) {
 	tests := []struct {
-		name     string
-		data     repository.TaskSchema
-		payload  tasks.UpdateTaskInput
-		expected tasks.TaskOutput
+		name        string
+		data        repository.TaskSchema
+		param       int
+		payload     tasks.UpdateTaskInput
+		expected    tasks.TaskOutput
+		expectError bool
+		error       error
 	}{
 		{
-			name:     "returns updated task",
-			data:     repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
-			payload:  tasks.UpdateTaskInput{Name: "買晚餐", Status: 1},
-			expected: tasks.TaskOutput{Id: 1, Name: "買晚餐", Status: 1},
+			name:        "returns updated task",
+			data:        repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			param:       1,
+			payload:     tasks.UpdateTaskInput{Name: "買晚餐", Status: 1},
+			expected:    tasks.TaskOutput{Id: 1, Name: "買晚餐", Status: 1},
+			expectError: false,
+		},
+		{
+			name:        "returns error",
+			data:        repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			param:       2,
+			payload:     tasks.UpdateTaskInput{Name: "買晚餐", Status: 1},
+			expectError: true,
+			error:       mockNotFoundError,
 		},
 	}
 
@@ -144,12 +157,18 @@ func Test_UpdateTask(t *testing.T) {
 			repo := initMockTaskRepository()
 			repo.PopulateData(tc.data)
 			usecase := tasks.InitTasksUsecase(repo)
-			got, err := usecase.UpdateTask(tc.data.Id, &tc.payload)
-			if err != nil {
-				t.Error(err)
-			}
-			if want := &tc.expected; !cmp.Equal(want, got) {
-				t.Errorf(cmp.Diff(want, got))
+			got, err := usecase.UpdateTask(tc.param, &tc.payload)
+			if tc.expectError {
+				if !errors.Is(err, tc.error) {
+					t.Errorf(cmp.Diff(tc.error.Error(), err.Error()))
+				}
+			} else {
+				if err != nil {
+					t.Error(err)
+				}
+				if want := &tc.expected; !cmp.Equal(want, got) {
+					t.Errorf(cmp.Diff(want, got))
+				}
 			}
 		})
 	}
