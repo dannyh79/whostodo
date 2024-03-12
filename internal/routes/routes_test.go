@@ -189,6 +189,35 @@ func Test_PUTTask(t *testing.T) {
 	}
 }
 
+func Test_DELETETask(t *testing.T) {
+	tests := []struct {
+		name       string
+		data       repository.TaskSchema
+		param      int
+		statusCode int
+	}{
+		{
+			name:       "returns status code 200",
+			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			param:      1,
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			rr := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%d", tc.param), nil)
+
+			suite := newTestSuite()
+			suite.repo.PopulateData(tc.data)
+			suite.engine.ServeHTTP(rr, req)
+
+			assertHttpStatus(t, rr, tc.statusCode)
+		})
+	}
+}
+
 func assertHttpStatus(t *testing.T, rr *httptest.ResponseRecorder, want int) {
 	t.Helper()
 	if got := rr.Result().StatusCode; got != want {

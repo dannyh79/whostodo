@@ -19,6 +19,7 @@ func AddRoutes(r *gin.Engine, u *tasks.TasksUsecase) {
 	r.GET("/tasks", listTasksHandler(u))
 	r.POST("/task", createTaskHandler(u))
 	r.PUT("/task/:id", updateTaskHandler(u))
+	r.DELETE("/task/:id", deleteTaskHandler(u))
 }
 
 func listTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
@@ -58,6 +59,12 @@ func updateTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 		c.JSON(http.StatusCreated, gin.H{
 			"result": toPostTaskOutput(updated),
 		})
+	}
+}
+
+func deleteTaskHandler(_ *tasks.TasksUsecase) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, nil)
 	}
 }
 
