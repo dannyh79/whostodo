@@ -1,7 +1,7 @@
 package main
 
 import (
-	routes "github.com/dannyh79/whostodo/internal"
+	"github.com/dannyh79/whostodo/internal/routes"
 	"github.com/gin-gonic/gin"
 )
 
