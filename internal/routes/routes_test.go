@@ -21,7 +21,7 @@ type MockTestSuite struct {
 }
 
 type MockTaskRepository struct {
-	data []repository.TaskSchema
+	data map[int]repository.TaskSchema
 }
 
 func (r *MockTaskRepository) Save(t *entity.Task) entity.Task {
@@ -38,14 +38,14 @@ func (r *MockTaskRepository) ListAll() []*entity.Task {
 }
 
 func (r *MockTaskRepository) PopulateData(row repository.TaskSchema) {
-	r.data = append(r.data, row)
+	r.data[row.Id] = row
 }
 
 func newTestSuite() *MockTestSuite {
 	engine := gin.Default()
 
 	repo := &MockTaskRepository{
-		data: []repository.TaskSchema{},
+		data: make(map[int]repository.TaskSchema),
 	}
 	usecase := tasks.InitTasksUsecase(repo)
 

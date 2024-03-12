@@ -10,7 +10,7 @@ type TaskSchema struct {
 
 type InMemoryTaskRepository struct {
 	position int
-	data []TaskSchema
+	data     map[int]TaskSchema
 }
 
 func (r *InMemoryTaskRepository) ListAll() []*entity.Task {
@@ -29,13 +29,13 @@ func (r *InMemoryTaskRepository) NextId() int {
 func (r *InMemoryTaskRepository) Save(t *entity.Task) entity.Task {
 	t.Id = r.NextId()
 	row := *toSchema(t)
-	r.data = append(r.data, row)
+	r.data[row.Id] = row
 	return *toTask(row)
 }
 
 func InitInMemoryTaskRepository() *InMemoryTaskRepository {
 	return &InMemoryTaskRepository{
-		data: []TaskSchema{},
+		data: map[int]TaskSchema{},
 	}
 }
 
