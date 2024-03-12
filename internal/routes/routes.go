@@ -14,10 +14,9 @@ type PostTaskOutput struct {
 	Id     int    `json:"id"`
 }
 
-func AddRoutes(r *gin.Engine, u *tasks.TasksUsecase) *gin.Engine {
+func AddRoutes(r *gin.Engine, u *tasks.TasksUsecase) {
 	r.GET("/tasks", listTasksHandler(u))
 	r.POST("/tasks", createTasksHandler(u))
-	return r
 }
 
 func listTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
