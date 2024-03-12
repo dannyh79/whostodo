@@ -106,20 +106,20 @@ func Test_InMemoryTaskRepositoryDelete(t *testing.T) {
 		data  entity.Task
 		param entity.Task
 		error error
-		state  []*entity.Task
+		state []*entity.Task
 	}{
 		{
 			name:  "deletes the task",
 			data:  entity.Task{Id: 1, Name: "買早餐", Status: 0},
 			param: entity.Task{Id: 1, Name: "買早餐", Status: 0},
-			state:  []*entity.Task{},
+			state: []*entity.Task{},
 		},
 		{
 			name:  "returns error",
 			data:  entity.Task{Id: 1, Name: "買早餐", Status: 0},
 			param: entity.Task{Id: 2, Name: "買早餐", Status: 0},
 			error: repository.ErrorNotFound,
-			state:  []*entity.Task{{Id: 1, Name: "買早餐", Status: 0}},
+			state: []*entity.Task{{Id: 1, Name: "買早餐", Status: 0}},
 		},
 	}
 

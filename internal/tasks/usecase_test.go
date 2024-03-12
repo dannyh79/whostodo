@@ -26,6 +26,11 @@ func (r *MockTaskRepository) FindBy(id int) (*entity.Task, error) {
 }
 
 func (r *MockTaskRepository) Update(t *entity.Task) (*entity.Task, error) {
+	_, ok := r.data[t.Id]
+	if !ok {
+		return nil, mockNotFoundError
+	}
+
 	r.data[t.Id] = repository.TaskSchema{Id: t.Id, Name: t.Name, Status: t.Status}
 	return &entity.Task{Id: t.Id, Name: t.Name, Status: t.Status}, nil
 }
@@ -176,24 +181,24 @@ func Test_UpdateTask(t *testing.T) {
 
 func Test_DeteleTask(t *testing.T) {
 	tests := []struct {
-		name  string
-		data  repository.TaskSchema
-		param int
+		name        string
+		data        repository.TaskSchema
+		param       int
 		expectError bool
-		error error
+		error       error
 	}{
 		{
-			name:  "deletes the task",
-			data:  repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
-			param: 1,
+			name:        "deletes the task",
+			data:        repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			param:       1,
 			expectError: false,
 		},
 		{
-			name:  "returns error",
-			data:  repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
-			param: 2,
+			name:        "returns error",
+			data:        repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			param:       2,
 			expectError: true,
-			error: mockNotFoundError,
+			error:       mockNotFoundError,
 		},
 	}
 
