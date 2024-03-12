@@ -142,7 +142,7 @@ func Test_POSTTasks(t *testing.T) {
 	}
 }
 
-func Test_PUTTasks(t *testing.T) {
+func Test_PUTTask(t *testing.T) {
 	tests := []struct {
 		name       string
 		data       repository.TaskSchema
@@ -174,7 +174,7 @@ func Test_PUTTasks(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(
 				http.MethodPut,
-				fmt.Sprintf("/tasks/%d", tc.param),
+				fmt.Sprintf("/task/%d", tc.param),
 				bytes.NewBufferString(tc.payload),
 			)
 			req.Header.Add("Content-Type", "application/json")
