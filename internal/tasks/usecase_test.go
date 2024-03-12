@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/dannyh79/whostodo/internal/repository"
@@ -13,8 +14,14 @@ type MockTaskRepository struct {
 	data map[int]repository.TaskSchema
 }
 
+var mockNotFoundError = errors.New("not found")
+
 func (r *MockTaskRepository) FindBy(id int) (*entity.Task, error) {
-	row := r.data[id]
+	row, ok := r.data[id]
+	if !ok {
+		return nil, mockNotFoundError
+	}
+
 	return &entity.Task{Id: row.Id, Name: row.Name, Status: row.Status}, nil
 }
 
@@ -29,6 +36,12 @@ func (r *MockTaskRepository) Save(t *entity.Task) entity.Task {
 }
 
 func (r *MockTaskRepository) Delete(t *entity.Task) error {
+	_, ok := r.data[t.Id]
+	if !ok {
+		return mockNotFoundError
+	}
+
+	delete(r.data, t.Id)
 	return nil
 }
 
@@ -147,22 +160,41 @@ func Test_DeteleTask(t *testing.T) {
 		name  string
 		data  repository.TaskSchema
 		param int
+		expectError bool
+		error error
 	}{
 		{
 			name:  "deletes the task",
 			data:  repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
 			param: 1,
+			expectError: false,
+		},
+		{
+			name:  "returns error",
+			data:  repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			param: 2,
+			expectError: true,
+			error: mockNotFoundError,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			repo := initMockTaskRepository()
 			repo.PopulateData(tc.data)
 			usecase := tasks.InitTasksUsecase(repo)
 			err := usecase.DeleteTask(tc.param)
-			if err != nil {
-				t.Error(err)
+
+			if tc.expectError {
+				if !errors.Is(err, tc.error) {
+					t.Errorf(cmp.Diff(tc.error.Error(), err.Error()))
+				}
+			} else {
+				if err != nil {
+					t.Error(err)
+				}
 			}
 		})
 	}
