@@ -16,7 +16,6 @@ type CreateTaskInput struct {
 }
 
 type UpdateTaskInput struct {
-	Id     int    `json:"id"`
 	Name   string `json:"name"`
 	Status int    `json:"status"`
 }
@@ -51,12 +50,12 @@ func (u *TasksUsecase) CreateTask(i *CreateTaskInput) *TaskOutput {
 	}
 }
 
-func (u *TasksUsecase) UpdateTask(id int, i *UpdateTaskInput) *TaskOutput {
+func (u *TasksUsecase) UpdateTask(id int, i *UpdateTaskInput) (*TaskOutput, error) {
 	return &TaskOutput{
 		Id:     1,
 		Name:   "買晚餐",
 		Status: 1,
-	}
+	}, nil
 }
 
 func InitTasksUsecase(repo TaskRepository) *TasksUsecase {

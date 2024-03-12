@@ -107,7 +107,7 @@ func Test_UpdateTask(t *testing.T) {
 		{
 			name:     "returns updated task",
 			data:     repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
-			payload:  tasks.UpdateTaskInput{Id: 1, Name: "買晚餐", Status: 1},
+			payload:  tasks.UpdateTaskInput{Name: "買晚餐", Status: 1},
 			expected: tasks.TaskOutput{Id: 1, Name: "買晚餐", Status: 1},
 		},
 	}
@@ -115,10 +115,14 @@ func Test_UpdateTask(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			repo := initMockTaskRepository()
+			repo.PopulateData(tc.data)
 			usecase := tasks.InitTasksUsecase(repo)
-			got := usecase.UpdateTask(tc.data.Id, &tc.payload)
-			if !cmp.Equal(*got, tc.expected) {
-				t.Errorf(cmp.Diff(got, tc.expected))
+			got, err := usecase.UpdateTask(tc.data.Id, &tc.payload)
+			if err != nil {
+				t.Error(err)
+			}
+			if want := &tc.expected; !cmp.Equal(want, got) {
+				t.Errorf(cmp.Diff(want, got))
 			}
 		})
 	}
