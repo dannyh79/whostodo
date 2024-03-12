@@ -112,7 +112,7 @@ func Test_GETTasks(t *testing.T) {
 	}
 }
 
-func Test_POSTTasks(t *testing.T) {
+func Test_POSTTask(t *testing.T) {
 	tests := []struct {
 		name       string
 		data       string
@@ -130,7 +130,7 @@ func Test_POSTTasks(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			rr := httptest.NewRecorder()
-			req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBufferString(tc.data))
+			req, _ := http.NewRequest(http.MethodPost, "/task", bytes.NewBufferString(tc.data))
 			req.Header.Add("Content-Type", "application/json")
 
 			suite := newTestSuite()
