@@ -206,6 +206,12 @@ func Test_DELETETask(t *testing.T) {
 			param:      1,
 			statusCode: http.StatusOK,
 		},
+		{
+			name:       "returns status code 404",
+			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			param:      2,
+			statusCode: http.StatusNotFound,
+		},
 	}
 
 	for _, tc := range tests {
