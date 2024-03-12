@@ -12,12 +12,11 @@ type Task struct {
 	Status int `json:"status"`
 }
 
-func Server() *gin.Engine {
-	engine := gin.Default()
-	engine.GET("/tasks", func (c *gin.Context) {
+func AddRoutes(r *gin.Engine) *gin.Engine {
+	r.GET("/tasks", func (c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"result": []Task{{Id: 1, Name: "name", Status: 0}},
 		})
 	})
-	return engine
+	return r
 }

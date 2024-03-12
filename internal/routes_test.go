@@ -6,15 +6,30 @@ import (
 	"testing"
 
 	"github.com/dannyh79/whostodo/internal"
+	"github.com/gin-gonic/gin"
 )
+
+type MockTestSuite struct {
+	engine *gin.Engine
+}
+
+func newTestSuite() *MockTestSuite {
+	engine := gin.Default()
+
+	routes.AddRoutes(engine)
+
+	return &MockTestSuite{
+		engine: engine,
+	}
+}
 
 func Test_GETTasks(t *testing.T) {
 	t.Run("returns status code 200 with result", func(t *testing.T) {
 		rr := httptest.NewRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
 
-		engine := routes.Server()
-		engine.ServeHTTP(rr, req)
+		suite := newTestSuite()
+		suite.engine.ServeHTTP(rr, req)
 
 		assertHttpStatus(t, rr, http.StatusOK)
 
