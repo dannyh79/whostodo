@@ -7,6 +7,7 @@ import (
 
 	"github.com/dannyh79/whostodo/internal/routes"
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-cmp/cmp"
 )
 
 type MockTestSuite struct {
@@ -24,33 +25,42 @@ func newTestSuite() *MockTestSuite {
 }
 
 func Test_GETTasks(t *testing.T) {
-	t.Run("returns status code 200 with result", func(t *testing.T) {
-		rr := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
+	tests := []struct{
+		name string
+		statusCode int
+		expected string
+	}{
+		{
+			name: "returns status code 200 with result",
+			statusCode: http.StatusOK,
+			expected: `{"result":[{"id":1,"name":"name","status":0}]}`,
+		},
+	}
 
-		suite := newTestSuite()
-		suite.engine.ServeHTTP(rr, req)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			rr := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
 
-		assertHttpStatus(t, rr, http.StatusOK)
+			suite := newTestSuite()
+			suite.engine.ServeHTTP(rr, req)
 
-		expectedBody := `{"result":[{"id":1,"name":"name","status":0}]}`
-		assertResponseBody(t, rr.Body.String(), expectedBody)
-	})
+			assertHttpStatus(t, rr, tc.statusCode)
+			assertResponseBody(t, rr.Body.String(), tc.expected)
+		})
+	}
 }
 
 func assertHttpStatus(t *testing.T, rr *httptest.ResponseRecorder, want int) {
 	t.Helper()
-
-	got := rr.Result().StatusCode
-	if got != want {
+	if got := rr.Result().StatusCode; got != want {
 		t.Errorf("got HTTP status %v, want %v", got, want)
 	}
 }
 
 func assertResponseBody(t testing.TB, got, want string) {
 	t.Helper()
-
-	if got != want {
-		t.Errorf("got body %q, want %q", got, want)
+	if !cmp.Equal(want, got) {
+		t.Errorf(cmp.Diff(want, got))
 	}
 }
