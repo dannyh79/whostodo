@@ -37,10 +37,11 @@ func (u *TasksUsecase) ListTasks() []TaskOutput {
 }
 
 func (u *TasksUsecase) CreateTask(i *CreateTaskInput) *TaskOutput {
+	task := u.repo.Save(&entity.Task{Name: i.Name})
 	return &TaskOutput{
-		Id:     1,
-		Name:   i.Name,
-		Status: 0,
+		Id:     task.Id,
+		Name:   task.Name,
+		Status: task.Status,
 	}
 }
 

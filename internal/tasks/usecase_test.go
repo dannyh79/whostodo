@@ -13,7 +13,10 @@ type MockTaskRepository struct {
 	data []repository.TaskSchema
 }
 
-func (r *MockTaskRepository) Save(*entity.Task) {}
+func (r *MockTaskRepository) Save(t *entity.Task) entity.Task {
+	t.Id = len(r.data) + 1
+	return *t
+}
 
 func (r *MockTaskRepository) ListAll() []*entity.Task {
 	var tasks []*entity.Task
