@@ -29,12 +29,6 @@ func (u *TasksUsecase) ListTasks() []TaskOutput {
 		})
 	}
 
-	output = append(output, TaskOutput{
-		Id: 1,
-		Name: "name",
-		Status: 0,
-	})
-
 	return output
 }
 
