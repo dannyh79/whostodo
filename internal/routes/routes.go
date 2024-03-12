@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/dannyh79/whostodo/internal/tasks"
 	"github.com/gin-gonic/gin"
@@ -40,11 +41,15 @@ func createTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	}
 }
 
-func updateTaskHandler(_ *tasks.TasksUsecase) gin.HandlerFunc {
+func updateTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		stubbed := &tasks.TaskOutput{Id: 1, Name: "買晚餐", Status: 1}
+		id, _ := strconv.Atoi(c.Param("id"))
+		var payload tasks.UpdateTaskInput
+		c.ShouldBind(&payload)
+
+		updated := u.UpdateTask(id, &payload)
 		c.JSON(http.StatusCreated, gin.H{
-			"result": toPostTaskOutput(stubbed),
+			"result": toPostTaskOutput(updated),
 		})
 	}
 }

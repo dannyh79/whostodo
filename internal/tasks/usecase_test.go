@@ -96,3 +96,30 @@ func Test_CreateTask(t *testing.T) {
 		})
 	}
 }
+
+func Test_UpdateTask(t *testing.T) {
+	tests := []struct {
+		name     string
+		data     repository.TaskSchema
+		payload  tasks.UpdateTaskInput
+		expected tasks.TaskOutput
+	}{
+		{
+			name:     "returns updated task",
+			data:     repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			payload:  tasks.UpdateTaskInput{Id: 1, Name: "買晚餐", Status: 1},
+			expected: tasks.TaskOutput{Id: 1, Name: "買晚餐", Status: 1},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := initMockTaskRepository()
+			usecase := tasks.InitTasksUsecase(repo)
+			got := usecase.UpdateTask(tc.data.Id, &tc.payload)
+			if !cmp.Equal(*got, tc.expected) {
+				t.Errorf(cmp.Diff(got, tc.expected))
+			}
+		})
+	}
+}

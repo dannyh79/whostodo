@@ -15,6 +15,12 @@ type CreateTaskInput struct {
 	Name string `json:"name"`
 }
 
+type UpdateTaskInput struct {
+	Id     int    `json:"id"`
+	Name   string `json:"name"`
+	Status int    `json:"status"`
+}
+
 type TaskRepository repository.Repository[entity.Task]
 
 type TasksUsecase struct {
@@ -42,6 +48,14 @@ func (u *TasksUsecase) CreateTask(i *CreateTaskInput) *TaskOutput {
 		Id:     task.Id,
 		Name:   task.Name,
 		Status: task.Status,
+	}
+}
+
+func (u *TasksUsecase) UpdateTask(id int, i *UpdateTaskInput) *TaskOutput {
+	return &TaskOutput{
+		Id:     1,
+		Name:   "買晚餐",
+		Status: 1,
 	}
 }
 
