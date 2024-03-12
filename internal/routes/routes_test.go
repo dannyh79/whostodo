@@ -110,6 +110,7 @@ func Test_POSTTasks(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBufferString(tc.data))
+			req.Header.Add("Content-Type", "application/json")
 
 			suite := newTestSuite()
 			suite.engine.ServeHTTP(rr, req)

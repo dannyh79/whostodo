@@ -13,6 +13,8 @@ type MockTaskRepository struct {
 	data []repository.TaskSchema
 }
 
+func (r *MockTaskRepository) Save(*entity.Task) {}
+
 func (r *MockTaskRepository) ListAll() []*entity.Task {
 	var tasks []*entity.Task
 	for _, row := range r.data {
