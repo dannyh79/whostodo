@@ -64,3 +64,28 @@ func Test_ListTasks(t *testing.T) {
 		})
 	}
 }
+
+func Test_CreateTask(t *testing.T) {
+	tests := []struct {
+		name     string
+		data     tasks.CreateTaskInput
+		expected tasks.TaskOutput
+	}{
+		{
+			name:     "returns created task",
+			data:     tasks.CreateTaskInput{Name: "買晚餐"},
+			expected: tasks.TaskOutput{Id: 1, Name: "買晚餐", Status: 0},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := initMockTaskRepository()
+			usecase := tasks.InitTasksUsecase(repo)
+			got := usecase.CreateTask(&tc.data)
+			if !cmp.Equal(*got, tc.expected) {
+				t.Errorf(cmp.Diff(got, tc.expected))
+			}
+		})
+	}
+}

@@ -30,8 +30,19 @@ func listTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 
 func createTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var payload tasks.CreateTaskInput
+		c.ShouldBind(&payload)
+		task := u.CreateTask(&payload)
 		c.JSON(http.StatusCreated, gin.H{
-			"result": PostTaskOutput{Name: "買晚餐", Status: 0, Id: 1},
+			"result": toPostTaskOutput(task),
 		})
+	}
+}
+
+func toPostTaskOutput(t *tasks.TaskOutput) PostTaskOutput {
+	return PostTaskOutput{
+		Id:     t.Id,
+		Name:   t.Name,
+		Status: t.Status,
 	}
 }
