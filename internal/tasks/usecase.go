@@ -38,6 +38,6 @@ func (u *TasksUsecase) ListTasks() []TaskOutput {
 	return output
 }
 
-func InitTasksUsecase(r TaskRepository) *TasksUsecase {
-	return &TasksUsecase{repo: r}
+func InitTasksUsecase(repo TaskRepository) *TasksUsecase {
+	return &TasksUsecase{repo}
 }
