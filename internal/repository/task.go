@@ -8,11 +8,11 @@ type TaskSchema struct {
 	Status int
 }
 
-type InMemoryRepo struct {
+type InMemoryTaskRepository struct {
 	data []TaskSchema
 }
 
-func (r *InMemoryRepo) ListAll() []entity.Task {
+func (r *InMemoryTaskRepository) ListAll() []entity.Task {
 	var tasks []entity.Task
 	for _, row := range r.data {
 		tasks = append(tasks, entity.NewTask(row.Id, row.Name, row.Status))
@@ -20,8 +20,8 @@ func (r *InMemoryRepo) ListAll() []entity.Task {
 	return tasks
 }
 
-func InitInMemoryRepo() *InMemoryRepo {
-	return &InMemoryRepo{
+func InitInMemoryTaskRepository() *InMemoryTaskRepository {
+	return &InMemoryTaskRepository{
 		data: []TaskSchema{},
 	}
 }

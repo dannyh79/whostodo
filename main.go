@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	repo := repository.InitInMemoryRepo()
+	repo := repository.InitInMemoryTaskRepository()
 	usecase := tasks.InitTasksUsecase(repo)
 	engine := gin.Default()
 	routes.AddRoutes(engine, usecase)

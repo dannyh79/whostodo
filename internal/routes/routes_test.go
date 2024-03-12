@@ -19,7 +19,7 @@ type MockTestSuite struct {
 func newTestSuite() *MockTestSuite {
 	engine := gin.Default()
 
-	repo := repository.InitInMemoryRepo()
+	repo := repository.InitInMemoryTaskRepository()
 	usecase := tasks.InitTasksUsecase(repo)
 
 	routes.AddRoutes(engine, usecase)
