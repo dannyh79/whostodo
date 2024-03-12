@@ -139,7 +139,7 @@ func Test_PUTTasks(t *testing.T) {
 		{
 			name:       "returns status code 200 with result",
 			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
-			payload:    `{"name":"買早餐","status":1}`,
+			payload:    `{"name":"買晚餐","status":1}`,
 			statusCode: http.StatusCreated,
 			expected:   `{"result":{"name":"買晚餐","status":1,"id":1}}`,
 		},
