@@ -57,6 +57,8 @@ func Test_ListTasks(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			repo := initMockTaskRepository()
 			if len(tc.data) > 0 {
 				repo.PopulateData(tc.data)
