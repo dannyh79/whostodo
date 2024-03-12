@@ -141,3 +141,29 @@ func Test_UpdateTask(t *testing.T) {
 		})
 	}
 }
+
+func Test_DeteleTask(t *testing.T) {
+	tests := []struct {
+		name  string
+		data  repository.TaskSchema
+		param int
+	}{
+		{
+			name:  "deletes the task",
+			data:  repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			param: 1,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := initMockTaskRepository()
+			repo.PopulateData(tc.data)
+			usecase := tasks.InitTasksUsecase(repo)
+			err := usecase.DeleteTask(tc.param)
+			if err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}

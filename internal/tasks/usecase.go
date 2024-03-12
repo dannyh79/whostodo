@@ -60,6 +60,16 @@ func (u *TasksUsecase) UpdateTask(id int, i *UpdateTaskInput) (*TaskOutput, erro
 }
 
 func (u *TasksUsecase) DeleteTask(id int) error {
+	task, err := u.repo.FindBy(id)
+	if err != nil {
+		return err
+	}
+
+	err = u.repo.Delete(task)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
