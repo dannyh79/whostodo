@@ -9,7 +9,7 @@ import (
 
 func main() {
 	repo := repository.InitInMemoryRepo()
-	usecase := tasks.InitTasksUsecase(*repo)
+	usecase := tasks.InitTasksUsecase(repo)
 	engine := gin.Default()
 	routes.AddRoutes(engine, usecase)
 	engine.Run()

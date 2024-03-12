@@ -22,7 +22,7 @@ func Test_ListTasks(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			repo := repository.InitInMemoryRepo()
-			usecase := tasks.InitTasksUsecase(*repo)
+			usecase := tasks.InitTasksUsecase(repo)
 			got := usecase.ListTasks()
 			if !cmp.Equal(got, tc.expected) {
 				t.Errorf(cmp.Diff(got, tc.expected))

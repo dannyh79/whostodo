@@ -20,7 +20,7 @@ func newTestSuite() *MockTestSuite {
 	engine := gin.Default()
 
 	repo := repository.InitInMemoryRepo()
-	usecase := tasks.InitTasksUsecase(*repo)
+	usecase := tasks.InitTasksUsecase(repo)
 
 	routes.AddRoutes(engine, usecase)
 

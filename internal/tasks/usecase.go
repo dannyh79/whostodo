@@ -1,6 +1,9 @@
 package tasks
 
-import "github.com/dannyh79/whostodo/internal/repository"
+import (
+	"github.com/dannyh79/whostodo/internal/repository"
+	entity "github.com/dannyh79/whostodo/internal/tasks/entities"
+)
 
 type TaskOutput struct {
 	Id int `json:"id"`
@@ -8,8 +11,10 @@ type TaskOutput struct {
 	Status int `json:"status"`
 }
 
+type TaskRepository repository.Repository[entity.Task]
+
 type TasksUsecase struct {
-	repo repository.InMemoryRepo
+	repo TaskRepository
 }
 
 func (u *TasksUsecase) ListTasks() []TaskOutput {
@@ -33,6 +38,6 @@ func (u *TasksUsecase) ListTasks() []TaskOutput {
 	return output
 }
 
-func InitTasksUsecase(r repository.InMemoryRepo) *TasksUsecase {
+func InitTasksUsecase(r TaskRepository) *TasksUsecase {
 	return &TasksUsecase{repo: r}
 }
