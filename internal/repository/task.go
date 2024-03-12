@@ -59,6 +59,12 @@ func (r *InMemoryTaskRepository) Update(t *entity.Task) (*entity.Task, error) {
 }
 
 func (r *InMemoryTaskRepository) Delete(t *entity.Task) error {
+	_, ok := r.data[t.Id]
+	if !ok {
+		return ErrorNotFound
+	}
+
+	delete(r.data, t.Id)
 	return nil
 }
 

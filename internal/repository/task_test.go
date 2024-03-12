@@ -104,13 +104,25 @@ func Test_InMemoryTaskRepositoryDelete(t *testing.T) {
 	tests := []struct {
 		name  string
 		data  entity.Task
+		param entity.Task
 		error error
+		state  []*entity.Task
 	}{
 		{
-			name: "deletes the task",
-			data: entity.Task{Id: 1, Name: "買早餐", Status: 0},
+			name:  "deletes the task",
+			data:  entity.Task{Id: 1, Name: "買早餐", Status: 0},
+			param: entity.Task{Id: 1, Name: "買早餐", Status: 0},
+			state:  []*entity.Task{},
+		},
+		{
+			name:  "returns error",
+			data:  entity.Task{Id: 1, Name: "買早餐", Status: 0},
+			param: entity.Task{Id: 2, Name: "買早餐", Status: 0},
+			error: repository.ErrorNotFound,
+			state:  []*entity.Task{{Id: 1, Name: "買早餐", Status: 0}},
 		},
 	}
+
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -118,9 +130,14 @@ func Test_InMemoryTaskRepositoryDelete(t *testing.T) {
 			repo := repository.InitInMemoryTaskRepository()
 			repo.Save(&tc.data)
 
-			err := repo.Delete(&tc.data)
+			err := repo.Delete(&tc.param)
 			if want := tc.error; !errors.Is(err, want) {
 				t.Errorf(cmp.Diff(want.Error(), err.Error()))
+			}
+
+			tasks := repo.ListAll()
+			if len(tc.state) != len(tasks) {
+				t.Errorf(cmp.Diff(tc.state, tasks))
 			}
 		})
 	}
