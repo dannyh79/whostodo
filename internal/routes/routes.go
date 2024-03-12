@@ -16,7 +16,7 @@ type PostTaskOutput struct {
 
 func AddRoutes(r *gin.Engine, u *tasks.TasksUsecase) {
 	r.GET("/tasks", listTasksHandler(u))
-	r.POST("/tasks", createTasksHandler(u))
+	r.POST("/tasks", createTaskHandler(u))
 	r.PUT("/tasks/:id", updateTaskHandler(u))
 }
 
@@ -29,7 +29,7 @@ func listTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	}
 }
 
-func createTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
+func createTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var payload tasks.CreateTaskInput
 		c.ShouldBind(&payload)
