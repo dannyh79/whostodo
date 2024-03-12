@@ -6,8 +6,8 @@ type Task struct {
 	Status int
 }
 
-func NewTask(id int, name string, status int) Task {
-	return Task{
+func NewTask(id int, name string, status int) *Task {
+	return &Task{
 		Id: id,
 		Name: name,
 		Status: status,
