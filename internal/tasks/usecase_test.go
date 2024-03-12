@@ -91,7 +91,7 @@ func Test_CreateTask(t *testing.T) {
 			usecase := tasks.InitTasksUsecase(repo)
 			got := usecase.CreateTask(&tc.data)
 			if !cmp.Equal(*got, tc.expected) {
-				t.Errorf(cmp.Diff(got, tc.expected))
+				t.Errorf(cmp.Diff(tc.expected, *got))
 			}
 		})
 	}
