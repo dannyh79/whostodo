@@ -58,6 +58,10 @@ func (r *InMemoryTaskRepository) Update(t *entity.Task) (*entity.Task, error) {
 	return toTask(r.data[t.Id]), nil
 }
 
+func (r *InMemoryTaskRepository) Delete(t *entity.Task) error {
+	return nil
+}
+
 func InitInMemoryTaskRepository() *InMemoryTaskRepository {
 	return &InMemoryTaskRepository{
 		data: map[int]TaskSchema{},

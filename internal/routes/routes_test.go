@@ -43,6 +43,10 @@ func (r *MockTaskRepository) Save(t *entity.Task) entity.Task {
 	return *t
 }
 
+func (r *MockTaskRepository) Delete(t *entity.Task) error {
+	return nil
+}
+
 func (r *MockTaskRepository) ListAll() []*entity.Task {
 	var tasks []*entity.Task
 	for _, row := range r.data {

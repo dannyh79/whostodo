@@ -99,3 +99,29 @@ func Test_InMemoryTaskRepositoryUpdate(t *testing.T) {
 		}
 	})
 }
+
+func Test_InMemoryTaskRepositoryDelete(t *testing.T) {
+	tests := []struct {
+		name  string
+		data  entity.Task
+		error error
+	}{
+		{
+			name: "deletes the task",
+			data: entity.Task{Id: 1, Name: "買早餐", Status: 0},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			repo := repository.InitInMemoryTaskRepository()
+			repo.Save(&tc.data)
+
+			err := repo.Delete(&tc.data)
+			if want := tc.error; !errors.Is(err, want) {
+				t.Errorf(cmp.Diff(want.Error(), err.Error()))
+			}
+		})
+	}
+}

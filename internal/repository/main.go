@@ -5,4 +5,5 @@ type Repository[T any] interface {
 	Save(*T) T
 	FindBy(id int) (*T, error)
 	Update(*T) (*T, error)
+	Delete(*T) error
 }
