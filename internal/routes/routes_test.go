@@ -5,7 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/dannyh79/whostodo/internal/repository"
 	"github.com/dannyh79/whostodo/internal/routes"
+	"github.com/dannyh79/whostodo/internal/tasks"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 )
@@ -17,7 +19,10 @@ type MockTestSuite struct {
 func newTestSuite() *MockTestSuite {
 	engine := gin.Default()
 
-	routes.AddRoutes(engine)
+	repo := repository.InitInMemoryRepo()
+	usecase := tasks.InitTasksUsecase(*repo)
+
+	routes.AddRoutes(engine, usecase)
 
 	return &MockTestSuite{
 		engine: engine,

@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AddRoutes(r *gin.Engine) *gin.Engine {
+func AddRoutes(r *gin.Engine, u *tasks.TasksUsecase) *gin.Engine {
 	r.GET("/tasks", func (c *gin.Context) {
-		tasks := tasks.ListTasks()
+		tasks := u.ListTasks()
 		c.JSON(http.StatusOK, gin.H{
 			"result": tasks,
 		})
