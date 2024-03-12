@@ -1,6 +1,10 @@
 package repository
 
-import entity "github.com/dannyh79/whostodo/internal/tasks/entities"
+import (
+	"errors"
+
+	"github.com/dannyh79/whostodo/internal/tasks/entities"
+)
 
 type TaskSchema struct {
 	Id     int
@@ -12,6 +16,8 @@ type InMemoryTaskRepository struct {
 	position int
 	data     map[int]TaskSchema
 }
+
+var ErrorNotFound = errors.New("Task not found")
 
 func (r *InMemoryTaskRepository) ListAll() []*entity.Task {
 	var tasks []*entity.Task
@@ -31,6 +37,24 @@ func (r *InMemoryTaskRepository) Save(t *entity.Task) entity.Task {
 	row := *toSchema(t)
 	r.data[row.Id] = row
 	return *toTask(row)
+}
+
+func (r *InMemoryTaskRepository) FindBy(id int) (*entity.Task, error) {
+	if (id >= len(r.data)) {
+		return &entity.Task{}, ErrorNotFound
+	}
+
+	row := r.data[id]
+	return toTask(row), nil
+}
+
+func (r *InMemoryTaskRepository) Update(t *entity.Task) (*entity.Task, error) {
+	if (t.Id >= len(r.data)) {
+		return &entity.Task{}, ErrorNotFound
+	}
+
+	r.data[t.Id] = *toSchema(t)
+	return toTask(r.data[t.Id]), nil
 }
 
 func InitInMemoryTaskRepository() *InMemoryTaskRepository {

@@ -24,6 +24,16 @@ type MockTaskRepository struct {
 	data map[int]repository.TaskSchema
 }
 
+func (r *MockTaskRepository) FindBy(id int) (*entity.Task, error) {
+	row := r.data[id]
+	return &entity.Task{Id: row.Id, Name: row.Name, Status: row.Status}, nil
+}
+
+func (r *MockTaskRepository) Update(t *entity.Task) (*entity.Task, error) {
+	r.data[t.Id] = repository.TaskSchema{Id: t.Id, Name: t.Name, Status: t.Status}
+	return &entity.Task{Id: t.Id, Name: t.Name, Status: t.Status}, nil
+}
+
 func (r *MockTaskRepository) Save(t *entity.Task) entity.Task {
 	t.Id = len(r.data) + 1
 	return *t
