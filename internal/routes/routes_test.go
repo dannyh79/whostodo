@@ -65,6 +65,11 @@ func Test_GETTasks(t *testing.T) {
 			statusCode: http.StatusOK,
 			expected: `{"result":[{"id":1,"name":"name","status":0}]}`,
 		},
+		{
+			name: "returns status code 200 with empty result",
+			statusCode: http.StatusOK,
+			expected: `{"result":[]}`,
+		},
 	}
 
 	for _, tc := range tests {
