@@ -44,6 +44,10 @@ func Test_ListTasks(t *testing.T) {
 			data: []repository.TaskSchema{{Id: 1, Name: "name", Status: 0}},
 			expected: []tasks.TaskOutput{{Id: 1, Name: "name", Status: 0}},
 		},
+		{
+			name: "returns empty tasks",
+			expected: []tasks.TaskOutput{},
+		},
 	}
 
 	for _, tc := range tests {
