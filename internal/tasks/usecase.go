@@ -31,11 +31,7 @@ func (u *TasksUsecase) ListTasks() []TaskOutput {
 
 	tasks := u.repo.ListAll()
 	for _, task := range tasks {
-		output = append(output, TaskOutput{
-			Id:     task.Id,
-			Name:   task.Name,
-			Status: task.Status,
-		})
+		output = append(output, *toTaskOutput(task))
 	}
 
 	return output
@@ -43,21 +39,34 @@ func (u *TasksUsecase) ListTasks() []TaskOutput {
 
 func (u *TasksUsecase) CreateTask(i *CreateTaskInput) *TaskOutput {
 	task := u.repo.Save(&entity.Task{Name: i.Name})
-	return &TaskOutput{
-		Id:     task.Id,
-		Name:   task.Name,
-		Status: task.Status,
-	}
+	return toTaskOutput(&task)
 }
 
 func (u *TasksUsecase) UpdateTask(id int, i *UpdateTaskInput) (*TaskOutput, error) {
-	return &TaskOutput{
-		Id:     1,
-		Name:   "買晚餐",
-		Status: 1,
-	}, nil
+	task, err := u.repo.FindBy(id)
+	if err != nil {
+		return nil, err
+	}
+
+	task.Name = i.Name
+	task.Status = i.Status
+
+	updated, err := u.repo.Update(task)
+	if err != nil {
+		return nil, err
+	}
+
+	return toTaskOutput(updated), nil
 }
 
 func InitTasksUsecase(repo TaskRepository) *TasksUsecase {
 	return &TasksUsecase{repo}
+}
+
+func toTaskOutput(t *entity.Task) *TaskOutput {
+	return &TaskOutput{
+		Id:     t.Id,
+		Name:   t.Name,
+		Status: t.Status,
+	}
 }
