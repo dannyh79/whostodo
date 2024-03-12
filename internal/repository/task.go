@@ -40,17 +40,18 @@ func (r *InMemoryTaskRepository) Save(t *entity.Task) entity.Task {
 }
 
 func (r *InMemoryTaskRepository) FindBy(id int) (*entity.Task, error) {
-	if (id >= len(r.data)) {
-		return &entity.Task{}, ErrorNotFound
+	row, ok := r.data[id]
+	if !ok {
+		return nil, ErrorNotFound
 	}
 
-	row := r.data[id]
 	return toTask(row), nil
 }
 
 func (r *InMemoryTaskRepository) Update(t *entity.Task) (*entity.Task, error) {
-	if (t.Id >= len(r.data)) {
-		return &entity.Task{}, ErrorNotFound
+	_, ok := r.data[t.Id]
+	if !ok {
+		return nil, ErrorNotFound
 	}
 
 	r.data[t.Id] = *toSchema(t)
