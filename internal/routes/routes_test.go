@@ -37,10 +37,8 @@ func (r *MockTaskRepository) ListAll() []*entity.Task {
 	return tasks
 }
 
-func (r *MockTaskRepository) PopulateData(data []repository.TaskSchema) {
-	for _, row := range data {
-		r.data = append(r.data, row)
-	}
+func (r *MockTaskRepository) PopulateData(row repository.TaskSchema) {
+	r.data = append(r.data, row)
 }
 
 func newTestSuite() *MockTestSuite {
@@ -87,8 +85,10 @@ func Test_GETTasks(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
 
 			suite := newTestSuite()
-			if len(tc.data) > 0 {
-				suite.repo.PopulateData(tc.data)
+			if data := tc.data; len(data) > 0 {
+				for _, row := range data {
+					suite.repo.PopulateData(row)
+				}
 			}
 			suite.engine.ServeHTTP(rr, req)
 
@@ -131,14 +131,14 @@ func Test_POSTTasks(t *testing.T) {
 func Test_PUTTasks(t *testing.T) {
 	tests := []struct {
 		name       string
-		data       []repository.TaskSchema
+		data       repository.TaskSchema
 		payload    string
 		statusCode int
 		expected   string
 	}{
 		{
 			name:       "returns status code 200 with result",
-			data:       []repository.TaskSchema{{Id: 1, Name: "買早餐", Status: 0}},
+			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
 			payload:    `{"name":"買早餐","status":1}`,
 			statusCode: http.StatusCreated,
 			expected:   `{"result":{"name":"買晚餐","status":1,"id":1}}`,
@@ -150,7 +150,7 @@ func Test_PUTTasks(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(
 				http.MethodPut,
-				fmt.Sprintf("/tasks/%d", tc.data[0].Id),
+				fmt.Sprintf("/tasks/%d", tc.data.Id),
 				bytes.NewBufferString(tc.payload),
 			)
 			req.Header.Add("Content-Type", "application/json")

@@ -26,10 +26,8 @@ func (r *MockTaskRepository) ListAll() []*entity.Task {
 	return tasks
 }
 
-func (r *MockTaskRepository) PopulateData(data []repository.TaskSchema) {
-	for _, row := range data {
-		r.data = append(r.data, row)
-	}
+func (r *MockTaskRepository) PopulateData(row repository.TaskSchema) {
+	r.data = append(r.data, row)
 }
 
 func initMockTaskRepository() *MockTaskRepository {
@@ -60,8 +58,10 @@ func Test_ListTasks(t *testing.T) {
 			t.Parallel()
 
 			repo := initMockTaskRepository()
-			if len(tc.data) > 0 {
-				repo.PopulateData(tc.data)
+			if data := tc.data; len(data) > 0 {
+				for _, row := range data {
+					repo.PopulateData(row)
+				}
 			}
 			usecase := tasks.InitTasksUsecase(repo)
 			got := usecase.ListTasks()
