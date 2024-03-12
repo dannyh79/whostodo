@@ -47,8 +47,14 @@ func updateTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 		var payload tasks.UpdateTaskInput
 		c.ShouldBind(&payload)
 
-		// TODO
-		updated, _ := u.UpdateTask(id, &payload)
+		updated, err := u.UpdateTask(id, &payload)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"result": gin.H{},
+			})
+			return
+		}
+
 		c.JSON(http.StatusCreated, gin.H{
 			"result": toPostTaskOutput(updated),
 		})

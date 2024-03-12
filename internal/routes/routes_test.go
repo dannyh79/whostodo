@@ -2,6 +2,7 @@ package routes_test
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +26,10 @@ type MockTaskRepository struct {
 }
 
 func (r *MockTaskRepository) FindBy(id int) (*entity.Task, error) {
-	row := r.data[id]
+	row, ok := r.data[id]
+	if !ok {
+		return nil, errors.New("")
+	}
 	return &entity.Task{Id: row.Id, Name: row.Name, Status: row.Status}, nil
 }
 
@@ -142,6 +146,7 @@ func Test_PUTTasks(t *testing.T) {
 	tests := []struct {
 		name       string
 		data       repository.TaskSchema
+		param      int
 		payload    string
 		statusCode int
 		expected   string
@@ -149,9 +154,18 @@ func Test_PUTTasks(t *testing.T) {
 		{
 			name:       "returns status code 200 with result",
 			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
+			param:      1,
 			payload:    `{"name":"買晚餐","status":1}`,
 			statusCode: http.StatusCreated,
 			expected:   `{"result":{"name":"買晚餐","status":1,"id":1}}`,
+		},
+		{
+			name:       "returns status code 404 with empty result",
+			data:       repository.TaskSchema{},
+			param:      1,
+			payload:    `{"name":"買晚餐","status":1}`,
+			statusCode: http.StatusNotFound,
+			expected:   `{"result":{}}`,
 		},
 	}
 
@@ -160,7 +174,7 @@ func Test_PUTTasks(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(
 				http.MethodPut,
-				fmt.Sprintf("/tasks/%d", tc.data.Id),
+				fmt.Sprintf("/tasks/%d", tc.param),
 				bytes.NewBufferString(tc.payload),
 			)
 			req.Header.Add("Content-Type", "application/json")
