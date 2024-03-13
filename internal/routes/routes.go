@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/dannyh79/whostodo/internal/sessions"
 	"github.com/dannyh79/whostodo/internal/tasks"
@@ -99,7 +100,7 @@ func sessionMiddleware(u *sessions.SessionsUsecase, ignore map[string]string) gi
 			}
 		}
 
-		token, _ := c.Get(sessions.SessionKey)
+		token := getTokenFromHeader(c)
 		if u.Validate(token) {
 			c.Next()
 		} else {
@@ -107,6 +108,16 @@ func sessionMiddleware(u *sessions.SessionsUsecase, ignore map[string]string) gi
 			return
 		}
 	}
+}
+
+func getTokenFromHeader(c *gin.Context) string {
+	headerValue := c.Request.Header.Get("Authorization")
+	bearerAndToken := strings.Split(headerValue, "Bearer ")
+	if len(bearerAndToken) < 2 {
+		return ""
+	}
+
+	return bearerAndToken[1]
 }
 
 func toPostTaskOutput(t *tasks.TaskOutput) PostTaskOutput {

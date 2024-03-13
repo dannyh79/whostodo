@@ -19,8 +19,9 @@ import (
 )
 
 type MockTestSuite struct {
-	engine *gin.Engine
-	repo   *MockTaskRepository
+	engine      *gin.Engine
+	taskRepo    *MockTaskRepository
+	sessionRepo *MockSessionsRepository
 }
 
 type MockTaskRepository struct {
@@ -109,33 +110,27 @@ func initMockSessionsRepository() *MockSessionsRepository {
 	}
 }
 
-func newTestSuite(authorized bool) *MockTestSuite {
+var stubbedSession = Session{Id: "stubbed_token"}
+
+func newTestSuite() *MockTestSuite {
 	gin.SetMode(gin.TestMode)
 	engine := gin.Default()
-	engine.Use(func(c *gin.Context) {
-		token := ""
-		if authorized {
-			token = "someToken"
-			c.Set(sessions.SessionKey, token)
-		}
-		c.Next()
-	})
 
 	taskRepo := &MockTaskRepository{
 		data: make(map[int]repository.TaskSchema),
 	}
-	sessionsRepo := &MockSessionsRepository{
+	sessionRepo := &MockSessionsRepository{
 		data: make(map[string]Session),
 	}
-	sessionsRepo.PopulateData(Session{Id: "someToken"})
 	tasksUsecase := tasks.InitTasksUsecase(taskRepo)
-	sessionsUsecase := sessions.InitSessionsUsecase(sessionsRepo)
+	sessionsUsecase := sessions.InitSessionsUsecase(sessionRepo)
 
 	routes.AddRoutes(engine, tasksUsecase, sessionsUsecase)
 
 	return &MockTestSuite{
-		engine: engine,
-		repo:   taskRepo,
+		engine:      engine,
+		taskRepo:    taskRepo,
+		sessionRepo: sessionRepo,
 	}
 }
 
@@ -171,14 +166,18 @@ func Test_GETTasks(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			suite := newTestSuite(tc.authroized)
+			suite := newTestSuite()
 			if data := tc.data; len(data) > 0 {
 				for _, row := range data {
-					suite.repo.PopulateData(row)
+					suite.taskRepo.PopulateData(row)
 				}
 			}
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
+			if tc.authroized {
+				suite.sessionRepo.PopulateData(stubbedSession)
+				setRequestTokenHeader(t)(req, stubbedSession.Id)
+			}
 
 			suite.engine.ServeHTTP(rr, req)
 
@@ -214,11 +213,15 @@ func Test_POSTTask(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			suite := newTestSuite()
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodPost, "/task", bytes.NewBufferString(tc.data))
 			req.Header.Add("Content-Type", "application/json")
+			if tc.authroized {
+				suite.sessionRepo.PopulateData(stubbedSession)
+				setRequestTokenHeader(t)(req, stubbedSession.Id)
+			}
 
-			suite := newTestSuite(tc.authroized)
 			suite.engine.ServeHTTP(rr, req)
 
 			assertJsonHeader(t, rr)
@@ -266,6 +269,8 @@ func Test_PUTTask(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			suite := newTestSuite()
+			suite.taskRepo.PopulateData(tc.data)
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(
 				http.MethodPut,
@@ -273,9 +278,11 @@ func Test_PUTTask(t *testing.T) {
 				bytes.NewBufferString(tc.payload),
 			)
 			req.Header.Add("Content-Type", "application/json")
+			if tc.authroized {
+				suite.sessionRepo.PopulateData(stubbedSession)
+				setRequestTokenHeader(t)(req, stubbedSession.Id)
+			}
 
-			suite := newTestSuite(tc.authroized)
-			suite.repo.PopulateData(tc.data)
 			suite.engine.ServeHTTP(rr, req)
 
 			assertJsonHeader(t, rr)
@@ -316,11 +323,15 @@ func Test_DELETETask(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			suite := newTestSuite()
+			suite.taskRepo.PopulateData(tc.data)
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%d", tc.param), nil)
+			if tc.authroized {
+				suite.sessionRepo.PopulateData(stubbedSession)
+				setRequestTokenHeader(t)(req, stubbedSession.Id)
+			}
 
-			suite := newTestSuite(tc.authroized)
-			suite.repo.PopulateData(tc.data)
 			suite.engine.ServeHTTP(rr, req)
 
 			assertJsonHeader(t, rr)
@@ -348,7 +359,7 @@ func Test_POSTAuth(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			suite := newTestSuite(tc.authroized)
+			suite := newTestSuite()
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
 
@@ -379,5 +390,12 @@ func assertResponseBody(t testing.TB, got, want string) {
 	t.Helper()
 	if !cmp.Equal(want, got) {
 		t.Errorf(cmp.Diff(want, got))
+	}
+}
+
+func setRequestTokenHeader(t testing.TB) func(r *http.Request, token string) {
+	return func(r *http.Request, token string) {
+		t.Helper()
+		r.Header.Set("Authorization", "Bearer "+token)
 	}
 }
