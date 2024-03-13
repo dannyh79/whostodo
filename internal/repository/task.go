@@ -39,8 +39,8 @@ func (r *InMemoryTaskRepository) Save(t *entity.Task) entity.Task {
 	return *toTask(row)
 }
 
-func (r *InMemoryTaskRepository) FindBy(id int) (*entity.Task, error) {
-	row, ok := r.data[id]
+func (r *InMemoryTaskRepository) FindBy(id any) (*entity.Task, error) {
+	row, ok := r.data[id.(int)]
 	if !ok {
 		return nil, ErrorNotFound
 	}

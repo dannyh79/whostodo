@@ -16,8 +16,8 @@ type MockTaskRepository struct {
 
 var mockNotFoundError = errors.New("not found")
 
-func (r *MockTaskRepository) FindBy(id int) (*entity.Task, error) {
-	row, ok := r.data[id]
+func (r *MockTaskRepository) FindBy(id any) (*entity.Task, error) {
+	row, ok := r.data[id.(int)]
 	if !ok {
 		return nil, mockNotFoundError
 	}
