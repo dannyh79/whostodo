@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/dannyh79/whostodo/internal/repository"
@@ -110,6 +111,7 @@ func Test_GETTasks(t *testing.T) {
 			}
 			suite.engine.ServeHTTP(rr, req)
 
+			assertJsonHeader(t, rr)
 			assertHttpStatus(t, rr, tc.statusCode)
 			assertResponseBody(t, rr.Body.String(), tc.expected)
 		})
@@ -140,6 +142,7 @@ func Test_POSTTask(t *testing.T) {
 			suite := newTestSuite()
 			suite.engine.ServeHTTP(rr, req)
 
+			assertJsonHeader(t, rr)
 			assertHttpStatus(t, rr, tc.statusCode)
 			assertResponseBody(t, rr.Body.String(), tc.expected)
 		})
@@ -187,6 +190,7 @@ func Test_PUTTask(t *testing.T) {
 			suite.repo.PopulateData(tc.data)
 			suite.engine.ServeHTTP(rr, req)
 
+			assertJsonHeader(t, rr)
 			assertHttpStatus(t, rr, tc.statusCode)
 			assertResponseBody(t, rr.Body.String(), tc.expected)
 		})
@@ -223,8 +227,17 @@ func Test_DELETETask(t *testing.T) {
 			suite.repo.PopulateData(tc.data)
 			suite.engine.ServeHTTP(rr, req)
 
+			assertJsonHeader(t, rr)
 			assertHttpStatus(t, rr, tc.statusCode)
 		})
+	}
+}
+
+func assertJsonHeader(t *testing.T, rr *httptest.ResponseRecorder) {
+	t.Helper()
+	want := "application/json"
+	if got := rr.Header().Get("Content-Type"); !strings.Contains(got, want) {
+		t.Errorf("missed Content-Type %v in %v", want, got)
 	}
 }
 
