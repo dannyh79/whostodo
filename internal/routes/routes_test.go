@@ -11,6 +11,7 @@ import (
 
 	"github.com/dannyh79/whostodo/internal/repository"
 	"github.com/dannyh79/whostodo/internal/routes"
+	"github.com/dannyh79/whostodo/internal/sessions"
 	"github.com/dannyh79/whostodo/internal/tasks"
 	"github.com/dannyh79/whostodo/internal/tasks/entities"
 	"github.com/gin-gonic/gin"
@@ -67,7 +68,7 @@ func newTestSuite(authorized bool) *MockTestSuite {
 		token := ""
 		if authorized {
 			token = "someToken"
-			c.Set("token", token)
+			c.Set(sessions.SessionKey, token)
 		}
 		c.Next()
 	})
@@ -75,9 +76,10 @@ func newTestSuite(authorized bool) *MockTestSuite {
 	repo := &MockTaskRepository{
 		data: make(map[int]repository.TaskSchema),
 	}
-	usecase := tasks.InitTasksUsecase(repo)
+	tasksUsecase := tasks.InitTasksUsecase(repo)
+	sessionsUsecase := sessions.InitSessionsUsecase()
 
-	routes.AddRoutes(engine, usecase)
+	routes.AddRoutes(engine, tasksUsecase, sessionsUsecase)
 
 	return &MockTestSuite{
 		engine: engine,

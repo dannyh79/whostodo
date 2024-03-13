@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/dannyh79/whostodo/internal/sessions"
 	"github.com/dannyh79/whostodo/internal/tasks"
 	"github.com/gin-gonic/gin"
 )
@@ -15,12 +16,12 @@ type PostTaskOutput struct {
 	Id     int    `json:"id"`
 }
 
-func AddRoutes(r *gin.Engine, u *tasks.TasksUsecase) {
-	r.Use(sessionMiddleware())
-	r.GET("/tasks", listTasksHandler(u))
-	r.POST("/task", createTaskHandler(u))
-	r.PUT("/task/:id", updateTaskHandler(u))
-	r.DELETE("/task/:id", deleteTaskHandler(u))
+func AddRoutes(r *gin.Engine, tasksU *tasks.TasksUsecase, sessionsU *sessions.SessionsUsecase) {
+	r.Use(sessionMiddleware(sessionsU))
+	r.GET("/tasks", listTasksHandler(tasksU))
+	r.POST("/task", createTaskHandler(tasksU))
+	r.PUT("/task/:id", updateTaskHandler(tasksU))
+	r.DELETE("/task/:id", deleteTaskHandler(tasksU))
 }
 
 func listTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
@@ -76,15 +77,15 @@ func deleteTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	}
 }
 
-func sessionMiddleware() gin.HandlerFunc {
+func sessionMiddleware(u *sessions.SessionsUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, _ := c.Get("token")
-		if token == nil || token == "" {
+		token, _ := c.Get(sessions.SessionKey)
+		if u.Validate(token) {
+			c.Next()
+		} else {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{})
 			return
 		}
-
-		c.Next()
 	}
 }
 
