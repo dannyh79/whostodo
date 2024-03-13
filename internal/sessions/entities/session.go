@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"crypto/rand"
+	"fmt"
+	"time"
+)
 
 type Session struct {
 	Id        string
@@ -14,6 +18,10 @@ func NewSession() *Session {
 	}
 }
 
+// Warning: Not a safe implementation.
 func nextId() string {
-	panic("TODO")
+	bytes := make([]byte, 16)
+	rand.Read(bytes)
+	token := fmt.Sprintf("%x", bytes)
+	return token
 }

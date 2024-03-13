@@ -14,7 +14,9 @@ type SessionsUsecase struct {
 }
 
 func (u *SessionsUsecase) Authenticate() string {
-	return "someToken"
+	s := entity.NewSession()
+	u.repo.Save(s)
+	return s.Id
 }
 
 func (u *SessionsUsecase) Validate(token any) bool {
