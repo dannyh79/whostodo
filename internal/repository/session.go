@@ -2,12 +2,11 @@ package repository
 
 import (
 	"time"
+
+	"github.com/dannyh79/whostodo/internal/sessions/entities"
 )
 
-type Session struct {
-	Id        string
-	CreatedAt time.Time
-}
+type Session = entity.Session
 
 type SessionSchema struct {
 	Id        string
