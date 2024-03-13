@@ -94,10 +94,11 @@ func authenticateHandler(u *sessions.SessionsUsecase) gin.HandlerFunc {
 		token := getTokenFromHeader(c)
 		if u.Validate(token) {
 			c.JSON(http.StatusNotModified, gin.H{})
-		} else {
-			token = u.Authenticate()
-			c.JSON(http.StatusCreated, gin.H{"result": token})
+			return
 		}
+
+		token = u.Authenticate()
+		c.JSON(http.StatusCreated, gin.H{"result": token})
 	}
 }
 
@@ -111,12 +112,12 @@ func sessionMiddleware(u *sessions.SessionsUsecase, ignore map[string]string) gi
 		}
 
 		token := getTokenFromHeader(c)
-		if u.Validate(token) {
-			c.Next()
-		} else {
+		if !u.Validate(token) {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{})
 			return
 		}
+
+		c.Next()
 	}
 }
 
