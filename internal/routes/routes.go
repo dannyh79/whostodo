@@ -17,6 +17,10 @@ type PostTaskOutput struct {
 	Id     int    `json:"id"`
 }
 
+type PostAuthOutput struct {
+	Token string `json:"token"`
+}
+
 var UnprotectedPaths = map[string]string{
 	"auth": "/auth",
 }
@@ -87,7 +91,13 @@ func deleteTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 
 func authenticateHandler(u *sessions.SessionsUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, nil)
+		token := getTokenFromHeader(c)
+		if u.Validate(token) {
+			c.JSON(http.StatusNotModified, gin.H{})
+		} else {
+			token = u.Authenticate()
+			c.JSON(http.StatusCreated, gin.H{"result": token})
+		}
 	}
 }
 

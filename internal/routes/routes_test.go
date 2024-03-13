@@ -349,9 +349,9 @@ func Test_POSTAuth(t *testing.T) {
 		expected   string
 	}{
 		{
-			name:       "returns status code 200",
-			authroized: false,
-			statusCode: http.StatusOK,
+			name:       "returns status code 304 with empty result",
+			authroized: true,
+			statusCode: http.StatusNotModified,
 		},
 	}
 
@@ -362,11 +362,16 @@ func Test_POSTAuth(t *testing.T) {
 			suite := newTestSuite()
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
+			if tc.authroized {
+				suite.sessionRepo.PopulateData(stubbedSession)
+				setRequestTokenHeader(t)(req, stubbedSession.Id)
+			}
 
 			suite.engine.ServeHTTP(rr, req)
 
 			assertJsonHeader(t, rr)
 			assertHttpStatus(t, rr, tc.statusCode)
+			assertResponseBody(t, rr.Body.String(), tc.expected)
 		})
 	}
 }

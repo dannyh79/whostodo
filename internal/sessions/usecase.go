@@ -13,6 +13,10 @@ type SessionsUsecase struct {
 	repo repository.Repository[Session]
 }
 
+func (u *SessionsUsecase) Authenticate() string {
+	return "someToken"
+}
+
 func (u *SessionsUsecase) Validate(token any) bool {
 	if token == nil {
 		return false
