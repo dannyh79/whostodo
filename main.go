@@ -9,9 +9,10 @@ import (
 )
 
 func main() {
-	repo := repository.InitInMemoryTaskRepository()
-	tasksUsecase := tasks.InitTasksUsecase(repo)
-	sessionsUsecase := sessions.InitSessionsUsecase()
+	taskRepo := repository.InitInMemoryTaskRepository()
+	tasksUsecase := tasks.InitTasksUsecase(taskRepo)
+	sessionRepo := repository.InitInMemorySessionRepository()
+	sessionsUsecase := sessions.InitSessionsUsecase(sessionRepo)
 	engine := gin.Default()
 	routes.AddRoutes(engine, tasksUsecase, sessionsUsecase)
 	engine.Run()

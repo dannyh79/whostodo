@@ -61,6 +61,54 @@ func (r *MockTaskRepository) PopulateData(row repository.TaskSchema) {
 	r.data[row.Id] = row
 }
 
+type Session = repository.Session
+
+type MockSessionsRepository struct {
+	data map[string]Session
+}
+
+var mockSessionNotFoundError = errors.New("session not found")
+
+func (r *MockSessionsRepository) FindBy(id any) (*Session, error) {
+	if id == nil {
+		return nil, mockSessionNotFoundError
+	}
+
+	row, ok := r.data[id.(string)]
+	if !ok {
+		return nil, mockSessionNotFoundError
+	}
+
+	return &Session{Id: row.Id, CreatedAt: row.CreatedAt}, nil
+}
+
+func (r *MockSessionsRepository) Update(s *Session) (*Session, error) {
+	panic("not implemented")
+}
+
+func (r *MockSessionsRepository) Save(s *Session) Session {
+	r.data[s.Id] = *s
+	return *s
+}
+
+func (r *MockSessionsRepository) Delete(t *Session) error {
+	panic("not implemented")
+}
+
+func (r *MockSessionsRepository) ListAll() []*Session {
+	panic("not implemented")
+}
+
+func (r *MockSessionsRepository) PopulateData(row Session) {
+	r.data[row.Id] = row
+}
+
+func initMockSessionsRepository() *MockSessionsRepository {
+	return &MockSessionsRepository{
+		data: make(map[string]Session),
+	}
+}
+
 func newTestSuite(authorized bool) *MockTestSuite {
 	gin.SetMode(gin.TestMode)
 	engine := gin.Default()
@@ -73,17 +121,21 @@ func newTestSuite(authorized bool) *MockTestSuite {
 		c.Next()
 	})
 
-	repo := &MockTaskRepository{
+	taskRepo := &MockTaskRepository{
 		data: make(map[int]repository.TaskSchema),
 	}
-	tasksUsecase := tasks.InitTasksUsecase(repo)
-	sessionsUsecase := sessions.InitSessionsUsecase()
+	sessionsRepo := &MockSessionsRepository{
+		data: make(map[string]Session),
+	}
+	sessionsRepo.PopulateData(Session{Id: "someToken"})
+	tasksUsecase := tasks.InitTasksUsecase(taskRepo)
+	sessionsUsecase := sessions.InitSessionsUsecase(sessionsRepo)
 
 	routes.AddRoutes(engine, tasksUsecase, sessionsUsecase)
 
 	return &MockTestSuite{
 		engine: engine,
-		repo:   repo,
+		repo:   taskRepo,
 	}
 }
 
