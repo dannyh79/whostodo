@@ -60,9 +60,17 @@ func (r *MockTaskRepository) PopulateData(row repository.TaskSchema) {
 	r.data[row.Id] = row
 }
 
-func newTestSuite() *MockTestSuite {
+func newTestSuite(authorized bool) *MockTestSuite {
 	gin.SetMode(gin.TestMode)
 	engine := gin.Default()
+	engine.Use(func(c *gin.Context) {
+		token := ""
+		if authorized {
+			token = "someToken"
+			c.Set("token", token)
+		}
+		c.Next()
+	})
 
 	repo := &MockTaskRepository{
 		data: make(map[int]repository.TaskSchema),
@@ -80,20 +88,28 @@ func newTestSuite() *MockTestSuite {
 func Test_GETTasks(t *testing.T) {
 	tests := []struct {
 		name       string
+		authroized bool
 		data       []repository.TaskSchema
 		statusCode int
 		expected   string
 	}{
 		{
 			name:       "returns status code 200 with result",
+			authroized: true,
 			data:       []repository.TaskSchema{{Id: 1, Name: "name", Status: 0}},
 			statusCode: http.StatusOK,
 			expected:   `{"result":[{"id":1,"name":"name","status":0}]}`,
 		},
 		{
 			name:       "returns status code 200 with empty result",
+			authroized: true,
 			statusCode: http.StatusOK,
 			expected:   `{"result":[]}`,
+		},
+		{
+			name:       "returns status code 403",
+			statusCode: http.StatusForbidden,
+			expected:   `{}`,
 		},
 	}
 
@@ -101,15 +117,15 @@ func Test_GETTasks(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			rr := httptest.NewRecorder()
-			req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
-
-			suite := newTestSuite()
+			suite := newTestSuite(tc.authroized)
 			if data := tc.data; len(data) > 0 {
 				for _, row := range data {
 					suite.repo.PopulateData(row)
 				}
 			}
+			rr := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
+
 			suite.engine.ServeHTTP(rr, req)
 
 			assertJsonHeader(t, rr)
@@ -122,15 +138,23 @@ func Test_GETTasks(t *testing.T) {
 func Test_POSTTask(t *testing.T) {
 	tests := []struct {
 		name       string
+		authroized bool
 		data       string
 		statusCode int
 		expected   string
 	}{
 		{
 			name:       "returns status code 201 with result",
+			authroized: true,
 			data:       `{"name":"買晚餐"}`,
 			statusCode: http.StatusCreated,
 			expected:   `{"result":{"name":"買晚餐","status":0,"id":1}}`,
+		},
+		{
+			name:       "returns status code 403",
+			authroized: false,
+			statusCode: http.StatusForbidden,
+			expected:   `{}`,
 		},
 	}
 
@@ -140,7 +164,7 @@ func Test_POSTTask(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodPost, "/task", bytes.NewBufferString(tc.data))
 			req.Header.Add("Content-Type", "application/json")
 
-			suite := newTestSuite()
+			suite := newTestSuite(tc.authroized)
 			suite.engine.ServeHTTP(rr, req)
 
 			assertJsonHeader(t, rr)
@@ -153,6 +177,7 @@ func Test_POSTTask(t *testing.T) {
 func Test_PUTTask(t *testing.T) {
 	tests := []struct {
 		name       string
+		authroized bool
 		data       repository.TaskSchema
 		param      int
 		payload    string
@@ -161,6 +186,7 @@ func Test_PUTTask(t *testing.T) {
 	}{
 		{
 			name:       "returns status code 200 with result",
+			authroized: true,
 			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
 			param:      1,
 			payload:    `{"name":"買晚餐","status":1}`,
@@ -169,11 +195,18 @@ func Test_PUTTask(t *testing.T) {
 		},
 		{
 			name:       "returns status code 404 with empty result",
+			authroized: true,
 			data:       repository.TaskSchema{},
 			param:      1,
 			payload:    `{"name":"買晚餐","status":1}`,
 			statusCode: http.StatusNotFound,
 			expected:   `{"result":{}}`,
+		},
+		{
+			name:       "returns status code 403",
+			authroized: false,
+			statusCode: http.StatusForbidden,
+			expected:   `{}`,
 		},
 	}
 
@@ -187,7 +220,7 @@ func Test_PUTTask(t *testing.T) {
 			)
 			req.Header.Add("Content-Type", "application/json")
 
-			suite := newTestSuite()
+			suite := newTestSuite(tc.authroized)
 			suite.repo.PopulateData(tc.data)
 			suite.engine.ServeHTTP(rr, req)
 
@@ -201,21 +234,29 @@ func Test_PUTTask(t *testing.T) {
 func Test_DELETETask(t *testing.T) {
 	tests := []struct {
 		name       string
+		authroized bool
 		data       repository.TaskSchema
 		param      int
 		statusCode int
 	}{
 		{
 			name:       "returns status code 200",
+			authroized: true,
 			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
 			param:      1,
 			statusCode: http.StatusOK,
 		},
 		{
 			name:       "returns status code 404",
+			authroized: true,
 			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
 			param:      2,
 			statusCode: http.StatusNotFound,
+		},
+		{
+			name:       "returns status code 403",
+			authroized: false,
+			statusCode: http.StatusForbidden,
 		},
 	}
 
@@ -224,7 +265,7 @@ func Test_DELETETask(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%d", tc.param), nil)
 
-			suite := newTestSuite()
+			suite := newTestSuite(tc.authroized)
 			suite.repo.PopulateData(tc.data)
 			suite.engine.ServeHTTP(rr, req)
 

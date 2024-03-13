@@ -16,6 +16,7 @@ type PostTaskOutput struct {
 }
 
 func AddRoutes(r *gin.Engine, u *tasks.TasksUsecase) {
+	r.Use(sessionMiddleware())
 	r.GET("/tasks", listTasksHandler(u))
 	r.POST("/task", createTaskHandler(u))
 	r.PUT("/task/:id", updateTaskHandler(u))
@@ -72,6 +73,18 @@ func deleteTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, nil)
+	}
+}
+
+func sessionMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, _ := c.Get("token")
+		if token == nil || token == "" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{})
+			return
+		}
+
+		c.Next()
 	}
 }
 
