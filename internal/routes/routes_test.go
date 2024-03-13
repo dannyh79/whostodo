@@ -341,39 +341,38 @@ func Test_DELETETask(t *testing.T) {
 }
 
 func Test_POSTAuth(t *testing.T) {
-	tests := []struct {
-		name       string
-		authroized bool
-		data       []repository.TaskSchema
-		statusCode int
-		expected   string
-	}{
-		{
-			name:       "returns status code 304 with empty result",
-			authroized: true,
-			statusCode: http.StatusNotModified,
-		},
-	}
+	t.Run("returns status code 304 with empty result", func(t *testing.T) {
+		t.Parallel()
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+		suite := newTestSuite()
+		rr := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
+		suite.sessionRepo.PopulateData(stubbedSession)
+		setRequestTokenHeader(t)(req, stubbedSession.Id)
 
-			suite := newTestSuite()
-			rr := httptest.NewRecorder()
-			req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
-			if tc.authroized {
-				suite.sessionRepo.PopulateData(stubbedSession)
-				setRequestTokenHeader(t)(req, stubbedSession.Id)
-			}
+		suite.engine.ServeHTTP(rr, req)
 
-			suite.engine.ServeHTTP(rr, req)
+		assertJsonHeader(t, rr)
+		assertHttpStatus(t, rr, http.StatusNotModified)
+		assertResponseBody(t, rr.Body.String(), "")
+	})
 
-			assertJsonHeader(t, rr)
-			assertHttpStatus(t, rr, tc.statusCode)
-			assertResponseBody(t, rr.Body.String(), tc.expected)
-		})
-	}
+	t.Run("returns status code 201 with token", func(t *testing.T) {
+		t.Parallel()
+
+		suite := newTestSuite()
+		rr := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
+
+		suite.engine.ServeHTTP(rr, req)
+
+		assertJsonHeader(t, rr)
+		assertHttpStatus(t, rr, http.StatusCreated)
+
+		if emptyResult := `{"result":""}`; cmp.Equal(rr.Body.String(), emptyResult) {
+			t.Error()
+		}
+	})
 }
 
 func assertJsonHeader(t *testing.T, rr *httptest.ResponseRecorder) {
