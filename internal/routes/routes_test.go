@@ -329,6 +329,37 @@ func Test_DELETETask(t *testing.T) {
 	}
 }
 
+func Test_POSTAuth(t *testing.T) {
+	tests := []struct {
+		name       string
+		authroized bool
+		data       []repository.TaskSchema
+		statusCode int
+		expected   string
+	}{
+		{
+			name:       "returns status code 200",
+			authroized: false,
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			suite := newTestSuite(tc.authroized)
+			rr := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
+
+			suite.engine.ServeHTTP(rr, req)
+
+			assertJsonHeader(t, rr)
+			assertHttpStatus(t, rr, tc.statusCode)
+		})
+	}
+}
+
 func assertJsonHeader(t *testing.T, rr *httptest.ResponseRecorder) {
 	t.Helper()
 	want := "application/json"

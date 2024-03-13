@@ -16,8 +16,15 @@ type PostTaskOutput struct {
 	Id     int    `json:"id"`
 }
 
+var UnprotectedPaths = map[string]string{
+	"auth": "/auth",
+}
+
 func AddRoutes(r *gin.Engine, tasksU *tasks.TasksUsecase, sessionsU *sessions.SessionsUsecase) {
-	r.Use(sessionMiddleware(sessionsU))
+	r.Use(sessionMiddleware(sessionsU, UnprotectedPaths))
+
+	r.POST(UnprotectedPaths["auth"], authenticateHandler(sessionsU))
+
 	r.GET("/tasks", listTasksHandler(tasksU))
 	r.POST("/task", createTaskHandler(tasksU))
 	r.PUT("/task/:id", updateTaskHandler(tasksU))
@@ -77,8 +84,21 @@ func deleteTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	}
 }
 
-func sessionMiddleware(u *sessions.SessionsUsecase) gin.HandlerFunc {
+func authenticateHandler(u *sessions.SessionsUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, nil)
+	}
+}
+
+func sessionMiddleware(u *sessions.SessionsUsecase, ignore map[string]string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		for _, path := range ignore {
+			if c.Request.URL.Path == path {
+				c.Next()
+				return
+			}
+		}
+
 		token, _ := c.Get(sessions.SessionKey)
 		if u.Validate(token) {
 			c.Next()
