@@ -61,6 +61,7 @@ func (r *MockTaskRepository) PopulateData(row repository.TaskSchema) {
 }
 
 func newTestSuite() *MockTestSuite {
+	gin.SetMode(gin.TestMode)
 	engine := gin.Default()
 
 	repo := &MockTaskRepository{
