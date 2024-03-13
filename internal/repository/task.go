@@ -34,7 +34,7 @@ func (r *InMemoryTaskRepository) NextId() int {
 
 func (r *InMemoryTaskRepository) Save(t *entity.Task) entity.Task {
 	t.Id = r.NextId()
-	row := *toSchema(t)
+	row := *toTaskSchema(t)
 	r.data[row.Id] = row
 	return *toTask(row)
 }
@@ -54,7 +54,7 @@ func (r *InMemoryTaskRepository) Update(t *entity.Task) (*entity.Task, error) {
 		return nil, ErrorNotFound
 	}
 
-	r.data[t.Id] = *toSchema(t)
+	r.data[t.Id] = *toTaskSchema(t)
 	return toTask(r.data[t.Id]), nil
 }
 
@@ -78,7 +78,7 @@ func toTask(row TaskSchema) *entity.Task {
 	return entity.NewTask(row.Id, row.Name, row.Status)
 }
 
-func toSchema(t *entity.Task) *TaskSchema {
+func toTaskSchema(t *entity.Task) *TaskSchema {
 	return &TaskSchema{
 		Id:     t.Id,
 		Name:   t.Name,
