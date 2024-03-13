@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"errors"
-
 	"github.com/dannyh79/whostodo/internal/tasks/entities"
 )
 
@@ -16,8 +14,6 @@ type InMemoryTaskRepository struct {
 	position int
 	data     map[int]TaskSchema
 }
-
-var ErrorNotFound = errors.New("Task not found")
 
 func (r *InMemoryTaskRepository) ListAll() []*entity.Task {
 	var tasks []*entity.Task
