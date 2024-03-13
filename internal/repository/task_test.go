@@ -11,11 +11,10 @@ import (
 
 func Test_InMemoryTaskRepositoryListAll(t *testing.T) {
 	repo := repository.InitInMemoryTaskRepository()
+
 	tasks := repo.ListAll()
 
-	if !cmp.Equal(0, len(tasks)) {
-		t.Fail()
-	}
+	assertEqual(t)(len(tasks), 0)
 }
 
 func Test_InMemoryTaskRepositorySave(t *testing.T) {
@@ -23,16 +22,14 @@ func Test_InMemoryTaskRepositorySave(t *testing.T) {
 	repo.Save(&entity.Task{Id: 1, Name: "買晚餐", Status: 0})
 
 	tasks := repo.ListAll()
-	if !cmp.Equal(1, len(tasks)) {
-		t.Fail()
-	}
+
+	assertEqual(t)(len(tasks), 1)
 }
 
 func Test_InMemoryTaskRepositoryNextId(t *testing.T) {
 	repo := repository.InitInMemoryTaskRepository()
-	if !cmp.Equal(1, repo.NextId()) {
-		t.Fail()
-	}
+
+	assertEqual(t)(repo.NextId(), 1)
 }
 
 func Test_InMemoryTaskRepositoryFindBy(t *testing.T) {
@@ -44,12 +41,9 @@ func Test_InMemoryTaskRepositoryFindBy(t *testing.T) {
 		repo.Save(&task)
 
 		got, err := repo.FindBy(task.Id)
-		if want := &task; !cmp.Equal(want, got) {
-			t.Errorf(cmp.Diff(want, got))
-		}
-		if err != nil {
-			t.Errorf("unexpected error %v", err.Error())
-		}
+
+		assertEqual(t)(*got, task)
+		assertErrorEqual(t)(err, nil)
 	})
 
 	t.Run("returns error when not found", func(t *testing.T) {
@@ -58,12 +52,11 @@ func Test_InMemoryTaskRepositoryFindBy(t *testing.T) {
 		repo := repository.InitInMemoryTaskRepository()
 
 		got, err := repo.FindBy(1)
+
 		if got != nil {
-			t.Errorf(cmp.Diff(nil, got))
+			assertEqual(t)(got, nil)
 		}
-		if want := repository.ErrorNotFound; !errors.Is(err, want) {
-			t.Errorf(cmp.Diff(want.Error(), err.Error()))
-		}
+		assertErrorEqual(t)(err, repository.ErrorNotFound)
 	})
 }
 
@@ -76,27 +69,23 @@ func Test_InMemoryTaskRepositoryUpdate(t *testing.T) {
 		repo.Save(&task)
 
 		got, err := repo.Update(&task)
-		if want := &task; !cmp.Equal(want, got) {
-			t.Errorf(cmp.Diff(want, got))
-		}
-		if err != nil {
-			t.Errorf("unexpected error %v", err.Error())
-		}
+
+		assertEqual(t)(*got, task)
+		assertErrorEqual(t)(err, nil)
 	})
 
 	t.Run("returns error when not found", func(t *testing.T) {
 		t.Parallel()
 
 		repo := repository.InitInMemoryTaskRepository()
-
 		task := entity.Task{Id: 1, Name: "買早餐", Status: 0}
+
 		got, err := repo.Update(&task)
+
 		if got != nil {
-			t.Errorf(cmp.Diff(nil, got))
+			assertEqual(t)(got, nil)
 		}
-		if want := repository.ErrorNotFound; !errors.Is(err, want) {
-			t.Errorf(cmp.Diff(want.Error(), err.Error()))
-		}
+		assertErrorEqual(t)(err, repository.ErrorNotFound)
 	})
 }
 
@@ -131,14 +120,28 @@ func Test_InMemoryTaskRepositoryDelete(t *testing.T) {
 			repo.Save(&tc.data)
 
 			err := repo.Delete(&tc.param)
-			if want := tc.error; !errors.Is(err, want) {
-				t.Errorf(cmp.Diff(want.Error(), err.Error()))
-			}
-
 			tasks := repo.ListAll()
-			if len(tc.state) != len(tasks) {
-				t.Errorf(cmp.Diff(tc.state, tasks))
-			}
+
+			assertErrorEqual(t)(err, tc.error)
+			assertEqual(t)(len(tasks), len(tc.state))
 		})
+	}
+}
+
+func assertEqual(t *testing.T) func(got any, want any) {
+	return func(got any, want any) {
+		t.Helper()
+		if !cmp.Equal(got, want) {
+			t.Errorf(cmp.Diff(want, got))
+		}
+	}
+}
+
+func assertErrorEqual(t *testing.T) func(got error, want error) {
+	return func(got error, want error) {
+		t.Helper()
+		if want != nil && !errors.Is(got, want) {
+			t.Errorf(cmp.Diff(got.Error(), want.Error()))
+		}
 	}
 }

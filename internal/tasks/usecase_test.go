@@ -97,9 +97,8 @@ func Test_ListTasks(t *testing.T) {
 			}
 			usecase := tasks.InitTasksUsecase(repo)
 			got := usecase.ListTasks()
-			if !cmp.Equal(got, tc.expected) {
-				t.Errorf(cmp.Diff(got, tc.expected))
-			}
+
+			assertEqual(t)(got, tc.expected)
 		})
 	}
 }
@@ -122,9 +121,8 @@ func Test_CreateTask(t *testing.T) {
 			repo := initMockTaskRepository()
 			usecase := tasks.InitTasksUsecase(repo)
 			got := usecase.CreateTask(&tc.data)
-			if !cmp.Equal(*got, tc.expected) {
-				t.Errorf(cmp.Diff(tc.expected, *got))
-			}
+
+			assertEqual(t)(*got, tc.expected)
 		})
 	}
 }
@@ -163,17 +161,14 @@ func Test_UpdateTask(t *testing.T) {
 			repo.PopulateData(tc.data)
 			usecase := tasks.InitTasksUsecase(repo)
 			got, err := usecase.UpdateTask(tc.param, &tc.payload)
+
 			if tc.expectError {
-				if !errors.Is(err, tc.error) {
-					t.Errorf(cmp.Diff(tc.error.Error(), err.Error()))
-				}
+				assertErrorEqual(t)(err, tc.error)
 			} else {
 				if err != nil {
 					t.Error(err)
 				}
-				if want := &tc.expected; !cmp.Equal(want, got) {
-					t.Errorf(cmp.Diff(want, got))
-				}
+				assertEqual(t)(*got, tc.expected)
 			}
 		})
 	}
@@ -212,14 +207,30 @@ func Test_DeteleTask(t *testing.T) {
 			err := usecase.DeleteTask(tc.param)
 
 			if tc.expectError {
-				if !errors.Is(err, tc.error) {
-					t.Errorf(cmp.Diff(tc.error.Error(), err.Error()))
-				}
+				assertErrorEqual(t)(err, tc.error)
 			} else {
 				if err != nil {
 					t.Error(err)
 				}
 			}
 		})
+	}
+}
+
+func assertEqual(t *testing.T) func(got any, want any) {
+	return func(got any, want any) {
+		t.Helper()
+		if !cmp.Equal(got, want) {
+			t.Errorf(cmp.Diff(want, got))
+		}
+	}
+}
+
+func assertErrorEqual(t *testing.T) func(got error, want error) {
+	return func(got error, want error) {
+		t.Helper()
+		if !errors.Is(got, want) {
+			t.Errorf(cmp.Diff(got.Error(), want.Error()))
+		}
 	}
 }
