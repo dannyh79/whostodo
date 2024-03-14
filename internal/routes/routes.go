@@ -44,9 +44,7 @@ type PostAuthSuccessOutput struct {
 	Token string `json:"result"`
 }
 
-type PostAuthNotModifiedOutput struct {
-	Token string `json:"result"`
-}
+type PostAuthNotModifiedOutput struct{}
 
 var UnprotectedPaths = map[string]string{
 	"auth": "/auth",
