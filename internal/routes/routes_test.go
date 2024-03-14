@@ -262,53 +262,60 @@ func Test_DELETETask(t *testing.T) {
 }
 
 func Test_POSTAuth(t *testing.T) {
-	t.Run("returns status code 304 with empty result", func(t *testing.T) {
-		t.Parallel()
+	tests := []struct {
+		name             string
+		authroized       bool
+		session          Session
+		statusCode       int
+		expectNewSession bool
+	}{
+		{
+			name:             "returns status code 304 with empty result",
+			authroized:       true,
+			session:          createNewSession(),
+			statusCode:       http.StatusNotModified,
+			expectNewSession: false,
+		},
+		{
+			name:             "returns status code 201 with token",
+			authroized:       false,
+			session:          createNewSession(),
+			statusCode:       http.StatusCreated,
+			expectNewSession: true,
+		},
+		{
+			name:             "returns status code 201 with new token after 1 minute",
+			authroized:       true,
+			session:          createExpiredSession(),
+			statusCode:       http.StatusCreated,
+			expectNewSession: true,
+		},
+	}
 
-		suite := util.NewTestSuite()
-		rr := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
-		session := util.NewStubSession("stubbed_token", time.Now())
-		suite.SessionRepo.PopulateData(session)
-		setRequestTokenHeader(t)(req, session.Id)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 
-		suite.Engine.ServeHTTP(rr, req)
-		util.AssertJsonHeader(t, rr)
-		util.AssertHttpStatus(t, rr, http.StatusNotModified)
-		util.AssertResponseBody(t, rr.Body.String(), "")
-	})
+			suite := util.NewTestSuite()
+			rr := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
+			if tc.authroized {
+				suite.SessionRepo.PopulateData(tc.session)
+				setRequestTokenHeader(t)(req, tc.session.Id)
+			}
 
-	t.Run("returns status code 201 with token", func(t *testing.T) {
-		t.Parallel()
+			suite.Engine.ServeHTTP(rr, req)
 
-		suite := util.NewTestSuite()
-		rr := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
-
-		suite.Engine.ServeHTTP(rr, req)
-
-		util.AssertJsonHeader(t, rr)
-		util.AssertHttpStatus(t, rr, http.StatusCreated)
-		util.AssertNotEqual(t)(rr.Body.String(), `{"result":""}`)
-	})
-
-	t.Run("returns status code 201 with new token after 1 minute", func(t *testing.T) {
-		t.Parallel()
-
-		suite := util.NewTestSuite()
-
-		oldSession := createExpiredSession()
-		suite.SessionRepo.PopulateData(oldSession)
-		req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
-		rr := httptest.NewRecorder()
-		suite.Engine.ServeHTTP(rr, req)
-
-		token := getTokenFromResponse(rr)
-
-		util.AssertJsonHeader(t, rr)
-		util.AssertHttpStatus(t, rr, http.StatusCreated)
-		util.AssertNotEqual(t)(oldSession.Id, token)
-	})
+			util.AssertJsonHeader(t, rr)
+			util.AssertHttpStatus(t, rr, tc.statusCode)
+			if tc.expectNewSession {
+				token := getTokenFromResponse(rr)
+				util.AssertNotEqual(t)(token, tc.session.Id)
+			} else {
+				util.AssertEqual(t)(rr.Body.String(), "")
+			}
+		})
+	}
 }
 
 func setRequestTokenHeader(t testing.TB) func(r *http.Request, token string) {
