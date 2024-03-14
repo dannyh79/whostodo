@@ -9,7 +9,6 @@ import (
 
 	"github.com/dannyh79/whostodo/internal/repository"
 	util "github.com/dannyh79/whostodo/internal/testutil"
-	"github.com/google/go-cmp/cmp"
 )
 
 func Test_GETTasks(t *testing.T) {
@@ -246,10 +245,7 @@ func Test_POSTAuth(t *testing.T) {
 
 		util.AssertJsonHeader(t, rr)
 		util.AssertHttpStatus(t, rr, http.StatusCreated)
-
-		if emptyResult := `{"result":""}`; cmp.Equal(rr.Body.String(), emptyResult) {
-			t.Error()
-		}
+		util.AssertNotEqual(t)(rr.Body.String(), `{"result":""}`)
 	})
 }
 

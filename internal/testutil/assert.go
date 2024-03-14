@@ -18,6 +18,15 @@ func AssertEqual(t *testing.T) func(got any, want any) {
 	}
 }
 
+func AssertNotEqual(t *testing.T) func(got any, want any) {
+	return func(got any, want any) {
+		t.Helper()
+		if cmp.Equal(got, want) {
+			t.Error()
+		}
+	}
+}
+
 func AssertErrorEqual(t *testing.T) func(got error, want error) {
 	return func(got error, want error) {
 		t.Helper()
