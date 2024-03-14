@@ -11,14 +11,41 @@ import (
 )
 
 // Returning format is slightly different per spec
-type PostTaskOutput struct {
+type ListTaskItem struct {
+	Id     int    `json:"id"`
 	Name   string `json:"name"`
 	Status int    `json:"status"`
-	Id     int    `json:"id"`
+}
+type ListTasksOutput struct {
+	Result []ListTaskItem `json:"result"`
 }
 
-type PostAuthOutput struct {
-	Token string `json:"token"`
+type PostTaskOutput struct {
+	Result struct {
+		Name   string `json:"name"`
+		Status int    `json:"status"`
+		Id     int    `json:"id"`
+	} `json:"result"`
+}
+
+type UpdateTaskOutput struct {
+	Result struct {
+		Name   string `json:"name"`
+		Status int    `json:"status"`
+		Id     int    `json:"id"`
+	} `json:"result"`
+}
+
+type FailedUpdateTaskOutput struct {
+	Result struct{} `json:"result"`
+}
+
+type PostAuthSuccessOutput struct {
+	Token string `json:"result"`
+}
+
+type PostAuthNotModifiedOutput struct {
+	Token string `json:"result"`
 }
 
 var UnprotectedPaths = map[string]string{
@@ -39,9 +66,7 @@ func AddRoutes(r *gin.Engine, tasksU *tasks.TasksUsecase, sessionsU *sessions.Se
 func listTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tasks := u.ListTasks()
-		c.JSON(http.StatusOK, gin.H{
-			"result": tasks,
-		})
+		c.JSON(http.StatusOK, toListTasksOutput(tasks))
 	}
 }
 
@@ -50,9 +75,7 @@ func createTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 		var payload tasks.CreateTaskInput
 		c.ShouldBind(&payload)
 		task := u.CreateTask(&payload)
-		c.JSON(http.StatusCreated, gin.H{
-			"result": toPostTaskOutput(task),
-		})
+		c.JSON(http.StatusCreated, toPostTaskOutput(task))
 	}
 }
 
@@ -64,15 +87,11 @@ func updateTaskHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
 
 		updated, err := u.UpdateTask(id, &payload)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"result": gin.H{},
-			})
+			c.JSON(http.StatusNotFound, FailedUpdateTaskOutput{})
 			return
 		}
 
-		c.JSON(http.StatusCreated, gin.H{
-			"result": toPostTaskOutput(updated),
-		})
+		c.JSON(http.StatusCreated, toUpdateTaskOutput(updated))
 	}
 }
 
@@ -93,12 +112,12 @@ func authenticateHandler(u *sessions.SessionsUsecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := getTokenFromHeader(c)
 		if u.Validate(token) {
-			c.JSON(http.StatusNotModified, gin.H{})
+			c.JSON(http.StatusNotModified, PostAuthNotModifiedOutput{})
 			return
 		}
 
 		token = u.Authenticate()
-		c.JSON(http.StatusCreated, gin.H{"result": token})
+		c.JSON(http.StatusCreated, PostAuthSuccessOutput{Token: token})
 	}
 }
 
@@ -131,10 +150,32 @@ func getTokenFromHeader(c *gin.Context) string {
 	return bearerAndToken[1]
 }
 
-func toPostTaskOutput(t *tasks.TaskOutput) PostTaskOutput {
-	return PostTaskOutput{
-		Id:     t.Id,
-		Name:   t.Name,
-		Status: t.Status,
+func toListTasksOutput(ts []tasks.TaskOutput) *ListTasksOutput {
+	var result = make([]ListTaskItem, 0)
+	var output ListTasksOutput
+	for _, t := range ts {
+		result = append(result, ListTaskItem{
+			Id:     t.Id,
+			Name:   t.Name,
+			Status: t.Status,
+		})
 	}
+	output.Result = result
+	return &output
+}
+
+func toPostTaskOutput(t *tasks.TaskOutput) *PostTaskOutput {
+	var output PostTaskOutput
+	output.Result.Id = t.Id
+	output.Result.Name = t.Name
+	output.Result.Status = t.Status
+	return &output
+}
+
+func toUpdateTaskOutput(t *tasks.TaskOutput) *UpdateTaskOutput {
+	var output UpdateTaskOutput
+	output.Result.Id = t.Id
+	output.Result.Name = t.Name
+	output.Result.Status = t.Status
+	return &output
 }
