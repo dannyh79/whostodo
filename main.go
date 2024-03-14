@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/dannyh79/whostodo/internal/repository"
-	"github.com/dannyh79/whostodo/internal/rest"
+	"github.com/dannyh79/whostodo/internal/rest/v1"
 	"github.com/dannyh79/whostodo/internal/sessions"
 	"github.com/dannyh79/whostodo/internal/tasks"
 	"github.com/gin-gonic/gin"

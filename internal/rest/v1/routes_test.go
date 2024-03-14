@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/dannyh79/whostodo/internal/repository"
-	"github.com/dannyh79/whostodo/internal/rest"
+	"github.com/dannyh79/whostodo/internal/rest/v1"
 	"github.com/dannyh79/whostodo/internal/sessions/entities"
 	util "github.com/dannyh79/whostodo/internal/testutil"
 )
@@ -65,7 +65,7 @@ func Test_GETTasks(t *testing.T) {
 				}
 			}
 			rr := httptest.NewRecorder()
-			req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
+			req, _ := http.NewRequest(http.MethodGet, "/v1/tasks", nil)
 			if tc.authroized {
 				suite.SessionRepo.PopulateData(tc.session)
 				setRequestTokenHeader(t)(req, tc.session.Id)
@@ -118,7 +118,7 @@ func Test_POSTTask(t *testing.T) {
 
 			suite := util.NewTestSuite()
 			rr := httptest.NewRecorder()
-			req, _ := http.NewRequest(http.MethodPost, "/task", bytes.NewBufferString(tc.data))
+			req, _ := http.NewRequest(http.MethodPost, "/v1/task", bytes.NewBufferString(tc.data))
 			req.Header.Add("Content-Type", "application/json")
 			if tc.authroized {
 				suite.SessionRepo.PopulateData(tc.session)
@@ -189,7 +189,7 @@ func Test_PUTTask(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(
 				http.MethodPut,
-				fmt.Sprintf("/task/%d", tc.param),
+				fmt.Sprintf("/v1/task/%d", tc.param),
 				bytes.NewBufferString(tc.payload),
 			)
 			req.Header.Add("Content-Type", "application/json")
@@ -252,7 +252,7 @@ func Test_DELETETask(t *testing.T) {
 			suite := util.NewTestSuite()
 			suite.TaskRepo.PopulateData(tc.data)
 			rr := httptest.NewRecorder()
-			req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%d", tc.param), nil)
+			req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/v1/task/%d", tc.param), nil)
 			if tc.authroized {
 				suite.SessionRepo.PopulateData(tc.session)
 				setRequestTokenHeader(t)(req, tc.session.Id)
@@ -303,7 +303,7 @@ func Test_POSTAuth(t *testing.T) {
 
 			suite := util.NewTestSuite()
 			rr := httptest.NewRecorder()
-			req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
+			req, _ := http.NewRequest(http.MethodPost, "/v1/auth", nil)
 			if tc.authroized {
 				suite.SessionRepo.PopulateData(tc.session)
 				setRequestTokenHeader(t)(req, tc.session.Id)

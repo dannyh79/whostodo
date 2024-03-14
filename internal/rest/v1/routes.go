@@ -51,14 +51,16 @@ var UnprotectedPaths = map[string]string{
 }
 
 func AddRoutes(r *gin.Engine, tasksU *tasks.TasksUsecase, sessionsU *sessions.SessionsUsecase) {
-	r.Use(sessionMiddleware(sessionsU, UnprotectedPaths))
+	v1 := r.Group("/v1")
 
-	r.POST(UnprotectedPaths["auth"], authenticateHandler(sessionsU))
+	v1.Use(sessionMiddleware(sessionsU, UnprotectedPaths))
 
-	r.GET("/tasks", listTasksHandler(tasksU))
-	r.POST("/task", createTaskHandler(tasksU))
-	r.PUT("/task/:id", updateTaskHandler(tasksU))
-	r.DELETE("/task/:id", deleteTaskHandler(tasksU))
+	v1.POST(UnprotectedPaths["auth"], authenticateHandler(sessionsU))
+
+	v1.GET("/tasks", listTasksHandler(tasksU))
+	v1.POST("/task", createTaskHandler(tasksU))
+	v1.PUT("/task/:id", updateTaskHandler(tasksU))
+	v1.DELETE("/task/:id", deleteTaskHandler(tasksU))
 }
 
 func listTasksHandler(u *tasks.TasksUsecase) gin.HandlerFunc {
@@ -122,7 +124,7 @@ func authenticateHandler(u *sessions.SessionsUsecase) gin.HandlerFunc {
 func sessionMiddleware(u *sessions.SessionsUsecase, ignore map[string]string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		for _, path := range ignore {
-			if c.Request.URL.Path == path {
+			if c.Request.URL.Path == "/v1"+path {
 				c.Next()
 				return
 			}
