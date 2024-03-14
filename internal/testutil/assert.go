@@ -36,24 +36,21 @@ func AssertErrorEqual(t *testing.T) func(got error, want error) {
 	}
 }
 
-func AssertJsonHeader(t *testing.T, rr *httptest.ResponseRecorder) {
-	t.Helper()
-	want := "application/json"
-	if got := rr.Header().Get("Content-Type"); !strings.Contains(got, want) {
-		t.Errorf("missed Content-Type %v in %v", want, got)
+func AssertJsonHeader(t *testing.T) func(rr *httptest.ResponseRecorder) {
+	return func(rr *httptest.ResponseRecorder) {
+		t.Helper()
+		want := "application/json"
+		if got := rr.Header().Get("Content-Type"); !strings.Contains(got, want) {
+			t.Errorf("got HTTP status %v, want %v", got, want)
+		}
 	}
 }
 
-func AssertHttpStatus(t *testing.T, rr *httptest.ResponseRecorder, want int) {
-	t.Helper()
-	if got := rr.Result().StatusCode; got != want {
-		t.Errorf("got HTTP status %v, want %v", got, want)
-	}
-}
-
-func AssertResponseBody(t testing.TB, got, want string) {
-	t.Helper()
-	if !cmp.Equal(want, got) {
-		t.Errorf(cmp.Diff(want, got))
+func AssertHttpStatus(t *testing.T) func(rr *httptest.ResponseRecorder, want int) {
+	return func(rr *httptest.ResponseRecorder, want int) {
+		t.Helper()
+		if got := rr.Result().StatusCode; got != want {
+			t.Errorf("got HTTP status %v, want %v", got, want)
+		}
 	}
 }

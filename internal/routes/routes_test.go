@@ -73,9 +73,9 @@ func Test_GETTasks(t *testing.T) {
 
 			suite.Engine.ServeHTTP(rr, req)
 
-			util.AssertJsonHeader(t, rr)
-			util.AssertHttpStatus(t, rr, tc.statusCode)
-			util.AssertResponseBody(t, rr.Body.String(), tc.expected)
+			util.AssertJsonHeader(t)(rr)
+			util.AssertHttpStatus(t)(rr, tc.statusCode)
+			util.AssertEqual(t)(rr.Body.String(), tc.expected)
 		})
 	}
 }
@@ -125,9 +125,9 @@ func Test_POSTTask(t *testing.T) {
 
 			suite.Engine.ServeHTTP(rr, req)
 
-			util.AssertJsonHeader(t, rr)
-			util.AssertHttpStatus(t, rr, tc.statusCode)
-			util.AssertResponseBody(t, rr.Body.String(), tc.expected)
+			util.AssertJsonHeader(t)(rr)
+			util.AssertHttpStatus(t)(rr, tc.statusCode)
+			util.AssertEqual(t)(rr.Body.String(), tc.expected)
 		})
 	}
 }
@@ -196,9 +196,9 @@ func Test_PUTTask(t *testing.T) {
 
 			suite.Engine.ServeHTTP(rr, req)
 
-			util.AssertJsonHeader(t, rr)
-			util.AssertHttpStatus(t, rr, tc.statusCode)
-			util.AssertResponseBody(t, rr.Body.String(), tc.expected)
+			util.AssertJsonHeader(t)(rr)
+			util.AssertHttpStatus(t)(rr, tc.statusCode)
+			util.AssertEqual(t)(rr.Body.String(), tc.expected)
 		})
 	}
 }
@@ -254,8 +254,8 @@ func Test_DELETETask(t *testing.T) {
 
 			suite.Engine.ServeHTTP(rr, req)
 
-			util.AssertJsonHeader(t, rr)
-			util.AssertHttpStatus(t, rr, tc.statusCode)
+			util.AssertJsonHeader(t)(rr)
+			util.AssertHttpStatus(t)(rr, tc.statusCode)
 		})
 	}
 }
@@ -305,8 +305,8 @@ func Test_POSTAuth(t *testing.T) {
 
 			suite.Engine.ServeHTTP(rr, req)
 
-			util.AssertJsonHeader(t, rr)
-			util.AssertHttpStatus(t, rr, tc.statusCode)
+			util.AssertJsonHeader(t)(rr)
+			util.AssertHttpStatus(t)(rr, tc.statusCode)
 			if tc.expectNewSession {
 				token := getTokenFromResponse(rr)
 				util.AssertNotEqual(t)(token, tc.session.Id)
