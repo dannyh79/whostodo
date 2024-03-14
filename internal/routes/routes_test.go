@@ -114,6 +114,8 @@ func Test_POSTTask(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			suite := util.NewTestSuite()
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodPost, "/task", bytes.NewBufferString(tc.data))
@@ -180,6 +182,8 @@ func Test_PUTTask(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			suite := util.NewTestSuite()
 			suite.TaskRepo.PopulateData(tc.data)
 			rr := httptest.NewRecorder()
@@ -243,6 +247,8 @@ func Test_DELETETask(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			suite := util.NewTestSuite()
 			suite.TaskRepo.PopulateData(tc.data)
 			rr := httptest.NewRecorder()

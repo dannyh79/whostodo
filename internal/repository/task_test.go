@@ -9,6 +9,8 @@ import (
 )
 
 func Test_InMemoryTaskRepositoryListAll(t *testing.T) {
+	t.Parallel()
+
 	repo := repository.InitInMemoryTaskRepository()
 
 	tasks := repo.ListAll()
@@ -17,6 +19,8 @@ func Test_InMemoryTaskRepositoryListAll(t *testing.T) {
 }
 
 func Test_InMemoryTaskRepositorySave(t *testing.T) {
+	t.Parallel()
+
 	repo := repository.InitInMemoryTaskRepository()
 	repo.Save(&entity.Task{Id: 1, Name: "買晚餐", Status: 0})
 
@@ -26,6 +30,8 @@ func Test_InMemoryTaskRepositorySave(t *testing.T) {
 }
 
 func Test_InMemoryTaskRepositoryNextId(t *testing.T) {
+	t.Parallel()
+
 	repo := repository.InitInMemoryTaskRepository()
 
 	util.AssertEqual(t)(repo.NextId(), 1)

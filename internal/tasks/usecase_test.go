@@ -58,6 +58,8 @@ func Test_CreateTask(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			repo := util.InitMockTaskRepository()
 			usecase := tasks.InitTasksUsecase(repo)
 			got := usecase.CreateTask(&tc.data)
@@ -97,6 +99,8 @@ func Test_UpdateTask(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			repo := util.InitMockTaskRepository()
 			repo.PopulateData(tc.data)
 			usecase := tasks.InitTasksUsecase(repo)
