@@ -15,31 +15,40 @@ func Test_Validate(t *testing.T) {
 	tests := []struct {
 		name     string
 		data     Session
-		token    string
 		expected bool
 	}{
 		{
 			name:     "returns true",
-			data:     Session{Id: "someToken", CreatedAt: time.Now()},
-			token:    "someToken",
+			data:     createNewSession(),
 			expected: true,
 		},
 		{
 			name:     "returns false",
-			token:    "someToken",
+			data:     createExpiredSession(),
 			expected: false,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			repo := util.InitMockSessionsRepository()
 			repo.PopulateData(tc.data)
 			usecase := sessions.InitSessionsUsecase(repo)
 
-			got := usecase.Validate(tc.token)
+			got := usecase.Validate(tc.data.Id)
 
 			util.AssertEqual(t)(got, tc.expected)
 		})
 	}
+}
+
+func createNewSession() Session {
+	return util.NewStubSession("stubbed_token", time.Now())
+}
+
+func createExpiredSession() Session {
+	oneMinuteAgo := time.Now().Add(-(time.Minute + time.Second))
+	return util.NewStubSession("stubbed_token", oneMinuteAgo)
 }
