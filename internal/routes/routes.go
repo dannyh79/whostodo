@@ -150,7 +150,7 @@ func getTokenFromHeader(c *gin.Context) string {
 	return bearerAndToken[1]
 }
 
-func toListTasksOutput(ts []tasks.TaskOutput) *ListTasksOutput {
+func toListTasksOutput(ts []*tasks.TaskOutput) *ListTasksOutput {
 	var result = make([]ListTaskItem, 0)
 	var output ListTasksOutput
 	for _, t := range ts {

@@ -26,12 +26,12 @@ type TasksUsecase struct {
 	repo TaskRepository
 }
 
-func (u *TasksUsecase) ListTasks() []TaskOutput {
-	var output = make([]TaskOutput, 0)
+func (u *TasksUsecase) ListTasks() []*TaskOutput {
+	var output = make([]*TaskOutput, 0)
 
 	tasks := u.repo.ListAll()
 	for _, task := range tasks {
-		output = append(output, *toTaskOutput(task))
+		output = append(output, toTaskOutput(task))
 	}
 
 	return output
