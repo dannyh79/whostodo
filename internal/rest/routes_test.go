@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/dannyh79/whostodo/internal/repository"
-	"github.com/dannyh79/whostodo/internal/routes"
+	"github.com/dannyh79/whostodo/internal/rest"
 	"github.com/dannyh79/whostodo/internal/sessions/entities"
 	util "github.com/dannyh79/whostodo/internal/testutil"
 )
