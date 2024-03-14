@@ -10,6 +10,17 @@ import (
 
 type Session = repository.Session
 
+func Test_Authenticate(t *testing.T) {
+	t.Parallel()
+
+	repo := util.InitMockSessionsRepository()
+	usecase := sessions.InitSessionsUsecase(repo)
+
+	token := usecase.Authenticate()
+
+	util.AssertEqual(t)(token, repo.Data[token].Id)
+}
+
 func Test_Validate(t *testing.T) {
 	tests := []struct {
 		name     string
