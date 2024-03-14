@@ -2,12 +2,15 @@ package routes_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/dannyh79/whostodo/internal/repository"
+	"github.com/dannyh79/whostodo/internal/routes"
 	util "github.com/dannyh79/whostodo/internal/testutil"
 )
 
@@ -52,8 +55,9 @@ func Test_GETTasks(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
 			if tc.authroized {
-				suite.SessionRepo.PopulateData(util.StubbedSession)
-				setRequestTokenHeader(t)(req, util.StubbedSession.Id)
+				session := util.NewStubSession("stubbed_token", time.Now())
+				suite.SessionRepo.PopulateData(session)
+				setRequestTokenHeader(t)(req, session.Id)
 			}
 
 			suite.Engine.ServeHTTP(rr, req)
@@ -95,8 +99,9 @@ func Test_POSTTask(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodPost, "/task", bytes.NewBufferString(tc.data))
 			req.Header.Add("Content-Type", "application/json")
 			if tc.authroized {
-				suite.SessionRepo.PopulateData(util.StubbedSession)
-				setRequestTokenHeader(t)(req, util.StubbedSession.Id)
+				session := util.NewStubSession("stubbed_token", time.Now())
+				suite.SessionRepo.PopulateData(session)
+				setRequestTokenHeader(t)(req, session.Id)
 			}
 
 			suite.Engine.ServeHTTP(rr, req)
@@ -156,8 +161,9 @@ func Test_PUTTask(t *testing.T) {
 			)
 			req.Header.Add("Content-Type", "application/json")
 			if tc.authroized {
-				suite.SessionRepo.PopulateData(util.StubbedSession)
-				setRequestTokenHeader(t)(req, util.StubbedSession.Id)
+				session := util.NewStubSession("stubbed_token", time.Now())
+				suite.SessionRepo.PopulateData(session)
+				setRequestTokenHeader(t)(req, session.Id)
 			}
 
 			suite.Engine.ServeHTTP(rr, req)
@@ -205,8 +211,9 @@ func Test_DELETETask(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%d", tc.param), nil)
 			if tc.authroized {
-				suite.SessionRepo.PopulateData(util.StubbedSession)
-				setRequestTokenHeader(t)(req, util.StubbedSession.Id)
+				session := util.NewStubSession("stubbed_token", time.Now())
+				suite.SessionRepo.PopulateData(session)
+				setRequestTokenHeader(t)(req, session.Id)
 			}
 
 			suite.Engine.ServeHTTP(rr, req)
@@ -224,11 +231,11 @@ func Test_POSTAuth(t *testing.T) {
 		suite := util.NewTestSuite()
 		rr := httptest.NewRecorder()
 		req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
-		suite.SessionRepo.PopulateData(util.StubbedSession)
-		setRequestTokenHeader(t)(req, util.StubbedSession.Id)
+		session := util.NewStubSession("stubbed_token", time.Now())
+		suite.SessionRepo.PopulateData(session)
+		setRequestTokenHeader(t)(req, session.Id)
 
 		suite.Engine.ServeHTTP(rr, req)
-
 		util.AssertJsonHeader(t, rr)
 		util.AssertHttpStatus(t, rr, http.StatusNotModified)
 		util.AssertResponseBody(t, rr.Body.String(), "")
@@ -247,6 +254,25 @@ func Test_POSTAuth(t *testing.T) {
 		util.AssertHttpStatus(t, rr, http.StatusCreated)
 		util.AssertNotEqual(t)(rr.Body.String(), `{"result":""}`)
 	})
+
+	t.Run("returns status code 201 with new token after 1 minute", func(t *testing.T) {
+		t.Parallel()
+
+		suite := util.NewTestSuite()
+
+		oneMinuteAgo := time.Now().Add(-(time.Minute + time.Second))
+		oldSession := util.NewStubSession("stubbed_token", oneMinuteAgo)
+		suite.SessionRepo.PopulateData(oldSession)
+		req, _ := http.NewRequest(http.MethodPost, "/auth", nil)
+		rr := httptest.NewRecorder()
+		suite.Engine.ServeHTTP(rr, req)
+
+		token := getTokenFromResponse(rr)
+
+		util.AssertJsonHeader(t, rr)
+		util.AssertHttpStatus(t, rr, http.StatusCreated)
+		util.AssertNotEqual(t)(oldSession.Id, token)
+	})
 }
 
 func setRequestTokenHeader(t testing.TB) func(r *http.Request, token string) {
@@ -254,4 +280,10 @@ func setRequestTokenHeader(t testing.TB) func(r *http.Request, token string) {
 		t.Helper()
 		r.Header.Set("Authorization", "Bearer "+token)
 	}
+}
+
+func getTokenFromResponse(r *httptest.ResponseRecorder) string {
+	var body routes.PostAuthSuccessOutput
+	_ = json.Unmarshal(r.Body.Bytes(), &body)
+	return body.Token
 }

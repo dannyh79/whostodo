@@ -2,6 +2,7 @@ package testutil_test
 
 import (
 	"errors"
+	"time"
 
 	"github.com/dannyh79/whostodo/internal/repository"
 	"github.com/dannyh79/whostodo/internal/tasks/entities"
@@ -103,4 +104,6 @@ func InitMockSessionsRepository() *MockSessionsRepository {
 	}
 }
 
-var StubbedSession = Session{Id: "stubbed_token"}
+func NewStubSession(id string, createdAt time.Time) Session {
+	return Session{Id: id, CreatedAt: createdAt}
+}
