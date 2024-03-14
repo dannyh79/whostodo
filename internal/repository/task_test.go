@@ -38,60 +38,85 @@ func Test_InMemoryTaskRepositoryNextId(t *testing.T) {
 }
 
 func Test_InMemoryTaskRepositoryFindBy(t *testing.T) {
-	t.Run("returns a task", func(t *testing.T) {
-		t.Parallel()
+	tests := []struct {
+		name        string
+		data        entity.Task
+		param       int
+		expectError bool
+		error       error
+	}{
+		{
+			name:        "returns a task",
+			data:        entity.Task{Id: 1, Name: "買早餐", Status: 0},
+			param:       1,
+			expectError: false,
+		},
+		{
+			name:        "returns error when not found",
+			data:        entity.Task{Id: 1, Name: "買早餐", Status: 0},
+			param:       2,
+			expectError: true,
+			error:       repository.ErrorNotFound,
+		},
+	}
 
-		repo := repository.InitInMemoryTaskRepository()
-		task := entity.Task{Id: 1, Name: "買早餐", Status: 0}
-		repo.Save(&task)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 
-		got, err := repo.FindBy(task.Id)
+			repo := repository.InitInMemoryTaskRepository()
+			repo.Save(&tc.data)
 
-		util.AssertEqual(t)(*got, task)
-		util.AssertErrorEqual(t)(err, nil)
-	})
+			got, err := repo.FindBy(tc.param)
 
-	t.Run("returns error when not found", func(t *testing.T) {
-		t.Parallel()
-
-		repo := repository.InitInMemoryTaskRepository()
-
-		got, err := repo.FindBy(1)
-
-		if got != nil {
-			util.AssertEqual(t)(got, nil)
-		}
-		util.AssertErrorEqual(t)(err, repository.ErrorNotFound)
-	})
+			if tc.expectError {
+				util.AssertErrorEqual(t)(err, tc.error)
+			} else {
+				util.AssertEqual(t)(*got, tc.data)
+			}
+		})
+	}
 }
 
 func Test_InMemoryTaskRepositoryUpdate(t *testing.T) {
-	t.Run("returns updated task", func(t *testing.T) {
-		t.Parallel()
+	tests := []struct {
+		name        string
+		data        entity.Task
+		param       entity.Task
+		expectError bool
+		error       error
+	}{
+		{
+			name:        "returns updated task",
+			data:        entity.Task{Id: 1, Name: "買早餐", Status: 0},
+			param:       entity.Task{Id: 1, Name: "買晚餐", Status: 1},
+			expectError: false,
+		},
+		{
+			name:        "returns error when not found",
+			data:        entity.Task{Id: 1, Name: "買早餐", Status: 0},
+			param:       entity.Task{Id: 2, Name: "買晚餐", Status: 1},
+			expectError: true,
+			error:       repository.ErrorNotFound,
+		},
+	}
 
-		repo := repository.InitInMemoryTaskRepository()
-		task := entity.Task{Id: 1, Name: "買早餐", Status: 0}
-		repo.Save(&task)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 
-		got, err := repo.Update(&task)
+			repo := repository.InitInMemoryTaskRepository()
+			repo.Save(&tc.data)
 
-		util.AssertEqual(t)(*got, task)
-		util.AssertErrorEqual(t)(err, nil)
-	})
+			got, err := repo.Update(&tc.param)
 
-	t.Run("returns error when not found", func(t *testing.T) {
-		t.Parallel()
-
-		repo := repository.InitInMemoryTaskRepository()
-		task := entity.Task{Id: 1, Name: "買早餐", Status: 0}
-
-		got, err := repo.Update(&task)
-
-		if got != nil {
-			util.AssertEqual(t)(got, nil)
-		}
-		util.AssertErrorEqual(t)(err, repository.ErrorNotFound)
-	})
+			if tc.expectError {
+				util.AssertErrorEqual(t)(err, tc.error)
+			} else {
+				util.AssertNotEqual(t)(*got, tc.data)
+			}
+		})
+	}
 }
 
 func Test_InMemoryTaskRepositoryDelete(t *testing.T) {
