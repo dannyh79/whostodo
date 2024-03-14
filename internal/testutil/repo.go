@@ -104,6 +104,15 @@ func InitMockSessionsRepository() *MockSessionsRepository {
 	}
 }
 
-func NewStubSession(id string, createdAt time.Time) Session {
+func NewSession() Session {
+	return newStubSession("stubbed_token", time.Now())
+}
+
+func NewExpiredSession() Session {
+	oneMinuteAgo := time.Now().Add(-(time.Minute + time.Second))
+	return newStubSession("stubbed_token", oneMinuteAgo)
+}
+
+func newStubSession(id string, createdAt time.Time) Session {
 	return Session{Id: id, CreatedAt: createdAt}
 }

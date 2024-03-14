@@ -2,7 +2,6 @@ package sessions_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/dannyh79/whostodo/internal/repository"
 	"github.com/dannyh79/whostodo/internal/sessions"
@@ -19,12 +18,12 @@ func Test_Validate(t *testing.T) {
 	}{
 		{
 			name:     "returns true",
-			data:     createNewSession(),
+			data:     util.NewSession(),
 			expected: true,
 		},
 		{
 			name:     "returns false",
-			data:     createExpiredSession(),
+			data:     util.NewExpiredSession(),
 			expected: false,
 		},
 	}
@@ -42,13 +41,4 @@ func Test_Validate(t *testing.T) {
 			util.AssertEqual(t)(got, tc.expected)
 		})
 	}
-}
-
-func createNewSession() Session {
-	return util.NewStubSession("stubbed_token", time.Now())
-}
-
-func createExpiredSession() Session {
-	oneMinuteAgo := time.Now().Add(-(time.Minute + time.Second))
-	return util.NewStubSession("stubbed_token", oneMinuteAgo)
 }

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/dannyh79/whostodo/internal/repository"
 	"github.com/dannyh79/whostodo/internal/routes"
@@ -29,7 +28,7 @@ func Test_GETTasks(t *testing.T) {
 		{
 			name:       "returns status code 200 with result",
 			authroized: true,
-			session:    createNewSession(),
+			session:    util.NewSession(),
 			data:       []repository.TaskSchema{{Id: 1, Name: "name", Status: 0}},
 			statusCode: http.StatusOK,
 			expected:   `{"result":[{"id":1,"name":"name","status":0}]}`,
@@ -37,7 +36,7 @@ func Test_GETTasks(t *testing.T) {
 		{
 			name:       "returns status code 200 with empty result",
 			authroized: true,
-			session:    createNewSession(),
+			session:    util.NewSession(),
 			statusCode: http.StatusOK,
 			expected:   `{"result":[]}`,
 		},
@@ -49,7 +48,7 @@ func Test_GETTasks(t *testing.T) {
 		{
 			name:       "with expired session returns status code 403",
 			authroized: true,
-			session:    createExpiredSession(),
+			session:    util.NewExpiredSession(),
 			statusCode: http.StatusForbidden,
 			expected:   `{}`,
 		},
@@ -93,7 +92,7 @@ func Test_POSTTask(t *testing.T) {
 		{
 			name:       "returns status code 201 with result",
 			authroized: true,
-			session:    createNewSession(),
+			session:    util.NewSession(),
 			data:       `{"name":"買晚餐"}`,
 			statusCode: http.StatusCreated,
 			expected:   `{"result":{"name":"買晚餐","status":0,"id":1}}`,
@@ -107,7 +106,7 @@ func Test_POSTTask(t *testing.T) {
 		{
 			name:       "with expired session returns status code 403",
 			authroized: true,
-			session:    createExpiredSession(),
+			session:    util.NewExpiredSession(),
 			statusCode: http.StatusForbidden,
 			expected:   `{}`,
 		},
@@ -147,7 +146,7 @@ func Test_PUTTask(t *testing.T) {
 		{
 			name:       "returns status code 200 with result",
 			authroized: true,
-			session:    createNewSession(),
+			session:    util.NewSession(),
 			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
 			param:      1,
 			payload:    `{"name":"買晚餐","status":1}`,
@@ -157,7 +156,7 @@ func Test_PUTTask(t *testing.T) {
 		{
 			name:       "returns status code 404 with empty result",
 			authroized: true,
-			session:    createNewSession(),
+			session:    util.NewSession(),
 			data:       repository.TaskSchema{},
 			param:      1,
 			payload:    `{"name":"買晚餐","status":1}`,
@@ -173,7 +172,7 @@ func Test_PUTTask(t *testing.T) {
 		{
 			name:       "with expired session returns status code 403",
 			authroized: true,
-			session:    createExpiredSession(),
+			session:    util.NewExpiredSession(),
 			statusCode: http.StatusForbidden,
 			expected:   `{}`,
 		},
@@ -216,7 +215,7 @@ func Test_DELETETask(t *testing.T) {
 		{
 			name:       "returns status code 200",
 			authroized: true,
-			session:    createNewSession(),
+			session:    util.NewSession(),
 			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
 			param:      1,
 			statusCode: http.StatusOK,
@@ -224,7 +223,7 @@ func Test_DELETETask(t *testing.T) {
 		{
 			name:       "returns status code 404",
 			authroized: true,
-			session:    createNewSession(),
+			session:    util.NewSession(),
 			data:       repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
 			param:      2,
 			statusCode: http.StatusNotFound,
@@ -237,7 +236,7 @@ func Test_DELETETask(t *testing.T) {
 		{
 			name:       "with expired session returns status code 403",
 			authroized: true,
-			session:    createExpiredSession(),
+			session:    util.NewExpiredSession(),
 			statusCode: http.StatusForbidden,
 		},
 	}
@@ -272,21 +271,21 @@ func Test_POSTAuth(t *testing.T) {
 		{
 			name:             "returns status code 304 with empty result",
 			authroized:       true,
-			session:          createNewSession(),
+			session:          util.NewSession(),
 			statusCode:       http.StatusNotModified,
 			expectNewSession: false,
 		},
 		{
 			name:             "returns status code 201 with token",
 			authroized:       false,
-			session:          createNewSession(),
+			session:          util.NewSession(),
 			statusCode:       http.StatusCreated,
 			expectNewSession: true,
 		},
 		{
 			name:             "returns status code 201 with new token after 1 minute",
 			authroized:       true,
-			session:          createExpiredSession(),
+			session:          util.NewExpiredSession(),
 			statusCode:       http.StatusCreated,
 			expectNewSession: true,
 		},
@@ -329,13 +328,4 @@ func getTokenFromResponse(r *httptest.ResponseRecorder) string {
 	var body routes.PostAuthSuccessOutput
 	_ = json.Unmarshal(r.Body.Bytes(), &body)
 	return body.Token
-}
-
-func createNewSession() entity.Session {
-	return util.NewStubSession("stubbed_token", time.Now())
-}
-
-func createExpiredSession() entity.Session {
-	oneMinuteAgo := time.Now().Add(-(time.Minute + time.Second))
-	return util.NewStubSession("stubbed_token", oneMinuteAgo)
 }
