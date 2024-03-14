@@ -41,7 +41,7 @@ func Test_GETTasks(t *testing.T) {
 			expected:   `{"result":[]}`,
 		},
 		{
-			name:       "returns status code 403",
+			name:       "without session token returns status code 403",
 			statusCode: http.StatusForbidden,
 			expected:   `{}`,
 		},
@@ -98,7 +98,7 @@ func Test_POSTTask(t *testing.T) {
 			expected:   `{"result":{"name":"買晚餐","status":0,"id":1}}`,
 		},
 		{
-			name:       "returns status code 403",
+			name:       "without session token returns status code 403",
 			authroized: false,
 			statusCode: http.StatusForbidden,
 			expected:   `{}`,
@@ -164,7 +164,7 @@ func Test_PUTTask(t *testing.T) {
 			expected:   `{"result":{}}`,
 		},
 		{
-			name:       "returns status code 403",
+			name:       "without session token returns status code 403",
 			authroized: false,
 			statusCode: http.StatusForbidden,
 			expected:   `{}`,
@@ -229,7 +229,7 @@ func Test_DELETETask(t *testing.T) {
 			statusCode: http.StatusNotFound,
 		},
 		{
-			name:       "returns status code 403",
+			name:       "without session token returns status code 403",
 			authroized: false,
 			statusCode: http.StatusForbidden,
 		},
