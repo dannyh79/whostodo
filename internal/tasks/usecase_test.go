@@ -1,72 +1,12 @@
 package tasks_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/dannyh79/whostodo/internal/repository"
 	"github.com/dannyh79/whostodo/internal/tasks"
-	"github.com/dannyh79/whostodo/internal/tasks/entities"
-	"github.com/google/go-cmp/cmp"
+	util "github.com/dannyh79/whostodo/internal/testutil"
 )
-
-type MockTaskRepository struct {
-	data map[int]repository.TaskSchema
-}
-
-var mockNotFoundError = errors.New("not found")
-
-func (r *MockTaskRepository) FindBy(id any) (*entity.Task, error) {
-	row, ok := r.data[id.(int)]
-	if !ok {
-		return nil, mockNotFoundError
-	}
-
-	return &entity.Task{Id: row.Id, Name: row.Name, Status: row.Status}, nil
-}
-
-func (r *MockTaskRepository) Update(t *entity.Task) (*entity.Task, error) {
-	_, ok := r.data[t.Id]
-	if !ok {
-		return nil, mockNotFoundError
-	}
-
-	r.data[t.Id] = repository.TaskSchema{Id: t.Id, Name: t.Name, Status: t.Status}
-	return &entity.Task{Id: t.Id, Name: t.Name, Status: t.Status}, nil
-}
-
-func (r *MockTaskRepository) Save(t *entity.Task) entity.Task {
-	t.Id = len(r.data) + 1
-	return *t
-}
-
-func (r *MockTaskRepository) Delete(t *entity.Task) error {
-	_, ok := r.data[t.Id]
-	if !ok {
-		return mockNotFoundError
-	}
-
-	delete(r.data, t.Id)
-	return nil
-}
-
-func (r *MockTaskRepository) ListAll() []*entity.Task {
-	var tasks []*entity.Task
-	for _, row := range r.data {
-		tasks = append(tasks, entity.NewTask(row.Id, row.Name, row.Status))
-	}
-	return tasks
-}
-
-func (r *MockTaskRepository) PopulateData(row repository.TaskSchema) {
-	r.data[row.Id] = row
-}
-
-func initMockTaskRepository() *MockTaskRepository {
-	return &MockTaskRepository{
-		data: make(map[int]repository.TaskSchema),
-	}
-}
 
 func Test_ListTasks(t *testing.T) {
 	tests := []struct {
@@ -89,7 +29,7 @@ func Test_ListTasks(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			repo := initMockTaskRepository()
+			repo := util.InitMockTaskRepository()
 			if data := tc.data; len(data) > 0 {
 				for _, row := range data {
 					repo.PopulateData(row)
@@ -98,7 +38,7 @@ func Test_ListTasks(t *testing.T) {
 			usecase := tasks.InitTasksUsecase(repo)
 			got := usecase.ListTasks()
 
-			assertEqual(t)(got, tc.expected)
+			util.AssertEqual(t)(got, tc.expected)
 		})
 	}
 }
@@ -118,11 +58,11 @@ func Test_CreateTask(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			repo := initMockTaskRepository()
+			repo := util.InitMockTaskRepository()
 			usecase := tasks.InitTasksUsecase(repo)
 			got := usecase.CreateTask(&tc.data)
 
-			assertEqual(t)(*got, tc.expected)
+			util.AssertEqual(t)(*got, tc.expected)
 		})
 	}
 }
@@ -151,24 +91,24 @@ func Test_UpdateTask(t *testing.T) {
 			param:       2,
 			payload:     tasks.UpdateTaskInput{Name: "買晚餐", Status: 1},
 			expectError: true,
-			error:       mockNotFoundError,
+			error:       util.MockNotFoundError,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			repo := initMockTaskRepository()
+			repo := util.InitMockTaskRepository()
 			repo.PopulateData(tc.data)
 			usecase := tasks.InitTasksUsecase(repo)
 			got, err := usecase.UpdateTask(tc.param, &tc.payload)
 
 			if tc.expectError {
-				assertErrorEqual(t)(err, tc.error)
+				util.AssertErrorEqual(t)(err, tc.error)
 			} else {
 				if err != nil {
 					t.Error(err)
 				}
-				assertEqual(t)(*got, tc.expected)
+				util.AssertEqual(t)(*got, tc.expected)
 			}
 		})
 	}
@@ -193,7 +133,7 @@ func Test_DeteleTask(t *testing.T) {
 			data:        repository.TaskSchema{Id: 1, Name: "買早餐", Status: 0},
 			param:       2,
 			expectError: true,
-			error:       mockNotFoundError,
+			error:       util.MockNotFoundError,
 		},
 	}
 
@@ -201,36 +141,18 @@ func Test_DeteleTask(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			repo := initMockTaskRepository()
+			repo := util.InitMockTaskRepository()
 			repo.PopulateData(tc.data)
 			usecase := tasks.InitTasksUsecase(repo)
 			err := usecase.DeleteTask(tc.param)
 
 			if tc.expectError {
-				assertErrorEqual(t)(err, tc.error)
+				util.AssertErrorEqual(t)(err, tc.error)
 			} else {
 				if err != nil {
 					t.Error(err)
 				}
 			}
 		})
-	}
-}
-
-func assertEqual(t *testing.T) func(got any, want any) {
-	return func(got any, want any) {
-		t.Helper()
-		if !cmp.Equal(got, want) {
-			t.Errorf(cmp.Diff(want, got))
-		}
-	}
-}
-
-func assertErrorEqual(t *testing.T) func(got error, want error) {
-	return func(got error, want error) {
-		t.Helper()
-		if !errors.Is(got, want) {
-			t.Errorf(cmp.Diff(got.Error(), want.Error()))
-		}
 	}
 }
