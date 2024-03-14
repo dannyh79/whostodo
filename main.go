@@ -13,6 +13,8 @@ func main() {
 	tasksUsecase := tasks.InitTasksUsecase(taskRepo)
 	sessionRepo := repository.InitInMemorySessionRepository()
 	sessionsUsecase := sessions.InitSessionsUsecase(sessionRepo)
+
+	gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
 	routes.AddRoutes(engine, tasksUsecase, sessionsUsecase)
 	engine.Run()
