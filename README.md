@@ -1,4 +1,4 @@
-# Gogolook - Whostodo
+# Whostodo
 
 A todo app written in go. Session expires in 1 minute.
 
