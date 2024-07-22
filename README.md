@@ -102,7 +102,7 @@ Updates an existing task item.
 # replace `YOUR_TOKEN` to actual value
 # replace `YOUR_STATUS` to actual value, 0 or 1
 # replace `TASK_ID` to actual value
-curl -X PUT -H 'Content-type: application/json' -H 'Authorization: Bearer YOUR_TOKEN' -d '{"name":"TASK_NAME","status":TASK_STATUS}' localhost:8080/v1/tasks/TASK_ID
+curl -X PUT -H 'Content-type: application/json' -H 'Authorization: Bearer YOUR_TOKEN' -d '{"name":"TASK_NAME","status":TASK_STATUS}' localhost:8080/v1/task/TASK_ID
 ```
 
 ```json
@@ -122,7 +122,7 @@ curl -X PUT -H 'Content-type: application/json' -H 'Authorization: Bearer YOUR_T
 # replace `YOUR_TOKEN` to actual value
 # replace `TASK_STATUS` to actual value, 0 or 1
 # replace `TASK_ID` to actual value
-curl -X PUT -H 'Content-type: application/json' 'Authorization: Bearer YOUR_TOKEN' -d '{"name":"TASK_NAME","status":TASK_STATUS}' localhost:8080/v1/tasks/TASK_ID
+curl -X PUT -H 'Content-type: application/json' 'Authorization: Bearer YOUR_TOKEN' -d '{"name":"TASK_NAME","status":TASK_STATUS}' localhost:8080/v1/task/TASK_ID
 ```
 
 ```json
@@ -140,7 +140,7 @@ Deletes an existing task item.
 ```shell
 # replace `YOUR_TOKEN` to actual value
 # replace `TASK_ID` to actual value
-curl -X DELETE -H 'Authorization: Bearer YOUR_TOKEN' localhost:8080/v1/tasks/TASK_ID
+curl -X DELETE -H 'Authorization: Bearer YOUR_TOKEN' localhost:8080/v1/task/TASK_ID
 ```
 
 #### Fails to locate the task item; returns 404
@@ -148,7 +148,7 @@ curl -X DELETE -H 'Authorization: Bearer YOUR_TOKEN' localhost:8080/v1/tasks/TAS
 ```shell
 # replace `YOUR_TOKEN` to actual value
 # replace `TASK_ID` to actual value
-curl -X DELETE -H 'Authorization: Bearer YOUR_TOKEN' localhost:8080/v1/tasks/TASK_ID
+curl -X DELETE -H 'Authorization: Bearer YOUR_TOKEN' localhost:8080/v1/task/TASK_ID
 ```
 
 ## Development
